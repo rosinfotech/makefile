@@ -2,13 +2,11 @@
 
 # Rosinfotech Makefile
 
-- Set of useful Makefile commands:
-
-## Commands
+## Predefined make commands
 
 ### `make git_commit_push`
 
-Perform git commit and push with the specified commit message.
+Performs a git commit, push and push --tags with the specified commit message and version.
 
 ```bash
 make git_commit_push "your commit message"
@@ -16,16 +14,29 @@ make git_commit_push "your commit message"
 
 ### `make sync_version`
 
-Synchronize project version. Runs the `scripts/sync_version.sh` script.
+Synchronizes project version values. Runs the `scripts/sync_version.sh` script. The script reads the new version value from the 2nd line of the `./.version` file. The `.version` file also contains the current version (line 1) and relative file paths where the current version should be changed.
 
 ```bash
 make sync_version
 ```
 
-### `make test`
+## Additional scripts
 
-Run project tests via the `scripts/test.sh` script.
+- `scripts/setup.sh`, `scripts/ssh_client.sh`, `scripts/ssh_directory_upload.sh`, `scripts/ssh_file_upload.sh` - allow you to write deployment scripts like `scripts/local_deploy_remote.sh`
 
-```bash
-make test
-```
+- You should create a `$HOME/.secrets.json` file to store and manage secrets:
+
+  ```json
+  {
+      "tech": {
+          "rosinfo": {
+              "ssh": {
+                  "host": "host",
+                  "port": "port",
+                  "username": "username",
+                  "password": "password"
+              }
+          }
+      }
+  }
+  ```

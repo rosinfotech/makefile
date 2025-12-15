@@ -10,8 +10,8 @@ sync_version: init
 git_commit_push: init
 	scripts/git_commit_push.sh "$(filter-out $@,$(MAKECMDGOALS))"
 
-test: init
-	scripts/test.sh
+local_deploy_remote: init
+	scripts/local_deploy_remote.sh
 
 %:
 	@:
