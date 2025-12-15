@@ -1,4 +1,4 @@
-.PHONY: bump_version init run_service_auth
+.PHONY: init
 .SILENT: init
 
 init:
