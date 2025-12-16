@@ -47,7 +47,7 @@ setup() {
         fi
     fi
 
-    chmod +x ./scripts/*.sh
+    chmod +x ./.makefile/*.sh
 
     echo "Setup completed successfully"
     echo ""

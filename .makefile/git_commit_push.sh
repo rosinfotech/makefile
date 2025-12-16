@@ -1,6 +1,6 @@
 #!/bin/bash
 
-source ./scripts/get_version.sh
+source ./.makefile/get_version.sh
 
 gitCommitPush() {
 

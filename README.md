@@ -12,17 +12,17 @@ Performs a git commit, push and push --tags with the specified commit message an
 make git_commit_push "your commit message"
 ```
 
-### `make sync_version`
+### `make update_version`
 
-Synchronizes project version values. Runs the `scripts/sync_version.sh` script. The script reads the new version value from the 2nd line of the `./.version` file. The `.version` file also contains the current version (line 1) and relative file paths where the current version should be changed.
+Synchronizes project version values. Runs the `.makefile/update_version.sh` script. The script reads the new version value from the 2nd line of the `./.version` file. The `.version` file also contains the current version (line 1) and relative file paths where the current version should be changed.
 
 ```bash
-make sync_version
+make update_version
 ```
 
-## Additional scripts
+## Additional .makefile
 
-- `scripts/setup.sh`, `scripts/ssh_client.sh`, `scripts/ssh_directory_upload.sh`, `scripts/ssh_file_upload.sh` - allow you to write deployment scripts like `scripts/local_deploy_remote.sh`
+- `.makefile/setup.sh`, `.makefile/ssh_client.sh`, `.makefile/ssh_directory_upload.sh`, `.makefile/ssh_file_upload.sh` - allow you to write deployment .makefile like `.makefile/local_deploy_remote.sh`
 
 - You should create a `$HOME/.secrets.json` file to store and manage secrets:
 

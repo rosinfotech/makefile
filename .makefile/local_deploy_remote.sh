@@ -2,11 +2,11 @@
 
 set -e
 
-source ./scripts/setup.sh
-source ./scripts/ssh_client.sh
-source ./scripts/ssh_file_upload.sh
-source ./scripts/ssh_directory_upload.sh
-source ./scripts/get_home_secret.sh
+source ./.makefile/setup.sh
+source ./.makefile/ssh_client.sh
+source ./.makefile/ssh_file_upload.sh
+source ./.makefile/ssh_directory_upload.sh
+source ./.makefile/get_home_secret.sh
 
 main() {
 
