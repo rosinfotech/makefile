@@ -24,7 +24,7 @@ escaped_current=$(echo "$current_version" | sed 's/\./\\./g')
 
 sed -n '3,$p' "$VERSION_FILE" | while read -r file; do
     if [ -f "$file" ]; then
-        sed -i '' "s/\"$escaped_current\"/\"$new_version\"/g" "$file"
+        sed -i '' "s/[[:<:]]$escaped_current[[:>:]]/$new_version/g" "$file"
         echo "Updated: $file"
     else
         echo "Warning: File not found - $file"
