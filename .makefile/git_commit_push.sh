@@ -22,26 +22,12 @@ gitCommitPush() {
 
     current_branch=$(git symbolic-ref --short HEAD 2>/dev/null)
     if [ -z "$current_branch" ]; then
-        echo "Error: Not on any branch (detached HEAD state)"
-        exit 1
-    fi
-
-    local upstream=$(git rev-parse --abbrev-ref "${current_branch}@{upstream}" 2>/dev/null)
-    if [ -z "$upstream" ]; then
-        echo "Warning: Current branch '${current_branch}' has no upstream branch."
-        echo "To push and set the upstream, run: git push --set-upstream origin ${current_branch}"
-        echo "Do you want to set upstream automatically? (y/N)"
-        read -r response
-        if [[ "$response" =~ ^([yY][eE][sS]|[yY])$ ]]; then
-            echo "Setting upstream for branch '${current_branch}'..."
-            git push --set-upstream "${remote_name}" "${current_branch}"
-            if [ $? -ne 0 ]; then
-                echo "Error: Failed to set upstream branch"
-                exit 1
-            fi
-        else
-            echo "Aborting: Upstream not set"
+        if git rev-parse --verify HEAD >/dev/null 2>&1; then
+            echo "Error: Not on any branch (detached HEAD state)"
             exit 1
+        else
+            current_branch=$(git config --get init.defaultBranch || echo "main")
+            echo "New repository detected. Will use branch '${current_branch}'"
         fi
     fi
 

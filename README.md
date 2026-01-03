@@ -1,3 +1,5 @@
+<!-- markdownlint-disable MD041 -->
+
 [![rosinfo.tech](https://cdn.rosinfo.tech/id/logo/id_logo_width_160.svg "rosinfo.tech")](https://rosinfo.tech)
 
 # Rosinfotech Makefile

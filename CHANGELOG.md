@@ -6,6 +6,12 @@
 
 <!-- markdownlint-disable MD024 -->
 
+## [0.0.10] - 2026-01-03
+
+### Updated
+
+- git_commit_push command;
+
 ## [0.0.9] - 2025-12-26
 
 ### Fixed
