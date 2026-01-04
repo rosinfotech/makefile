@@ -6,6 +6,12 @@
 
 <!-- markdownlint-disable MD024 -->
 
+## [0.0.11] - 2026-01-04
+
+### Updated
+
+- ssh_client command;
+
 ## [0.0.10] - 2026-01-03
 
 ### Updated

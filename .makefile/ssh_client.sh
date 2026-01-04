@@ -102,6 +102,7 @@ sshClient() {
             fi
 
             sshpass -p "$SSH_PASSWORD" rsync -avz -e "ssh -p $SSH_PORT $SSH_OPTIONS" \
+                --exclude-from='./.makefile/.rsync-exclude' \
                 $exclude_opts \
                 "$source/" "${SSH_USERNAME}@${SSH_HOST}:${destination}/"
             local exit_code=$?
