@@ -6,6 +6,17 @@
 
 <!-- markdownlint-disable MD024 -->
 
+## [0.0.11] - 2026-01-17
+
+### Added
+
+- Commands:
+
+  - `clear`;
+  - `git_commit_version`;
+  - `git_commit`;
+  - `kill_processes`;
+
 ## [0.0.11] - 2026-01-04
 
 ### Updated
