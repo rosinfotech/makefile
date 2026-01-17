@@ -6,7 +6,13 @@
 
 <!-- markdownlint-disable MD024 -->
 
-## [0.0.11] - 2026-01-17
+## [0.0.13] - 2026-01-17
+
+### Fixed
+
+- Get rid of extra commands;
+
+## [0.0.12] - 2026-01-17
 
 ### Added
 
