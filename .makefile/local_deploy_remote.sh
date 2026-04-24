@@ -1,12 +1,16 @@
 #!/bin/bash
 
+# An example of how to use commands related SSH transferring
+
 set -e
 
-source ./.makefile/setup.sh
-source ./.makefile/ssh_client.sh
-source ./.makefile/ssh_file_upload.sh
-source ./.makefile/ssh_directory_upload.sh
-source ./.makefile/get_home_secret.sh
+LIB_DIR="$(cd "$(dirname "$0")" && pwd)"
+
+source "$LIB_DIR/setup.sh"
+source "$LIB_DIR/ssh_client.sh"
+source "$LIB_DIR/ssh_file_upload.sh"
+source "$LIB_DIR/ssh_directory_upload.sh"
+source "$LIB_DIR/get_home_secret.sh"
 
 main() {
 

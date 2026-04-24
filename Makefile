@@ -1,29 +1,43 @@
-.PHONY: init
-.SILENT: init
+.PHONY: clear clone_makefile git_commit git_commit_push git_commit_version init kill_processes link local_deploy_remote setup unlink update_version
+.SILENT: clear clone_makefile git_commit git_commit_push git_commit_version init kill_processes link local_deploy_remote setup unlink update_version
 
-init:
-	chmod +x .makefile/*.sh
+PROJECT_ROOT ?= .
 
 clear: init
-	.makefile/clear.sh
+	$(PROJECT_ROOT)/.makefile/clear.sh
 
-update_version: init
-	.makefile/update_version.sh
-
-git_commit_push: init
-	.makefile/git_commit_push.sh "$(filter-out $@,$(MAKECMDGOALS))"
-
-git_commit_version: init
-	.makefile/git_commit_version.sh "$(filter-out $@,$(MAKECMDGOALS))"
+clone_makefile:
+	$(PROJECT_ROOT)/.makefile/clone_makefile.sh
 
 git_commit: init
-	.makefile/git_commit.sh "$(filter-out $@,$(MAKECMDGOALS))"
+	$(PROJECT_ROOT)/.makefile/git_commit.sh "$(filter-out $@,$(MAKECMDGOALS))"
+
+git_commit_push: init
+	$(PROJECT_ROOT)/.makefile/git_commit_push.sh "$(filter-out $@,$(MAKECMDGOALS))"
+
+git_commit_version: init
+	$(PROJECT_ROOT)/.makefile/git_commit_version.sh "$(filter-out $@,$(MAKECMDGOALS))"
+
+init:
+	chmod +x $(PROJECT_ROOT)/.makefile/*.sh
 
 kill_processes: init
-	.makefile/kill_processes.sh
+	$(PROJECT_ROOT)/.makefile/kill_processes.sh
+
+link: init
+	$(PROJECT_ROOT)/.makefile/link.sh
 
 local_deploy_remote: init
-	.makefile/local_deploy_remote.sh
+	$(PROJECT_ROOT)/.makefile/local_deploy_remote.sh
+
+setup: init
+	$(PROJECT_ROOT)/.makefile/setup.sh
+
+unlink: init
+	$(PROJECT_ROOT)/.makefile/unlink.sh
+
+update_version: init
+	$(PROJECT_ROOT)/.makefile/update_version.sh
 
 %:
 	@:

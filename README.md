@@ -4,6 +4,42 @@
 
 # Rosinfotech Makefile
 
+## Quick start
+
+### Cloning
+
+Clone the project and run following commands inside directory context:
+
+### Setup
+
+Makes available work with ssh files/directories transferring and other:
+
+```bash
+make setup
+```
+
+### Global launch
+
+Makes available commands inside any context directory:
+
+```bash
+make link
+```
+
+### Canceling global launch
+
+```bash
+make unlink
+```
+
+### Cloning Makefile
+
+Makes The Makefile part of your project - independent commands launch:
+
+```bash
+make clone_makefile
+```
+
 ## Predefined make commands
 
 ### `make git_commit_push`

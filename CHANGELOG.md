@@ -6,6 +6,12 @@
 
 <!-- markdownlint-disable MD024 -->
 
+## [0.1.0] - 2026-04-24
+
+### Release
+
+- Global launch (linking/unlinking), cloning;
+
 ## [0.0.13] - 2026-01-17
 
 ### Fixed

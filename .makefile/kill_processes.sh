@@ -1,5 +1,6 @@
 #!/bin/bash
 
+# Add any ports (via space) list to terminate processes associated with them
 PORTS=(8081)
 
 check_port_processes() {

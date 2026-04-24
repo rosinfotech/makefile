@@ -1,0 +1,12 @@
+#!/bin/bash
+
+set -e
+
+SELF=$(readlink -f "$0" 2>/dev/null || python3 -c "import os; print(os.path.realpath('$0'))")
+PROJECT_ROOT=$(dirname "$(dirname "$SELF")")
+
+if [ -f "$PWD/Makefile" ]; then
+    exec /usr/bin/make "$@"
+else
+    exec /usr/bin/make -f "$PROJECT_ROOT/Makefile" PROJECT_ROOT="$PROJECT_ROOT" "$@"
+fi

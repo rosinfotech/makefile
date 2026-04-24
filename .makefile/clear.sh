@@ -1,8 +1,11 @@
 #!/bin/bash
 
-source ./.makefile/kill_processes.sh
+LIB_DIR="$(cd "$(dirname "$0")" && pwd)"
 
-source ./.makefile/remove_dirs_safe.sh
+source "$LIB_DIR/kill_processes.sh"
+source "$LIB_DIR/remove_dirs_safe.sh"
+
+# Add any commands to remove files or directories
 
 # rm -f "package-lock.json"
 
