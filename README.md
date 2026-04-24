@@ -12,7 +12,7 @@ Clone the project and run following commands inside directory context:
 
 ### Setup
 
-Makes available work with ssh files/directories transferring and other:
+Makes available work with SSH files/directories transferring and other:
 
 ```bash
 make setup
@@ -34,7 +34,7 @@ make unlink
 
 ### Cloning Makefile
 
-Makes The Makefile part of your project - independent commands launch:
+Makes the Makefile part of your project - independent commands launch:
 
 ```bash
 make clone_makefile

@@ -6,6 +6,12 @@
 
 <!-- markdownlint-disable MD024 -->
 
+## [0.1.1] - 2026-04-24
+
+### Fixed
+
+- Minor inaccuracies in the README.md file;
+
 ## [0.1.0] - 2026-04-24
 
 ### Release
