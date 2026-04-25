@@ -19,7 +19,7 @@ git_commit_version: init
 	$(PROJECT_ROOT)/.makefile/git_commit_version.sh "$(filter-out $@,$(MAKECMDGOALS))"
 
 init:
-	chmod +x $(PROJECT_ROOT)/.makefile/*.sh
+	chmod +x $(PROJECT_ROOT)/.makefile/*.sh $(PROJECT_ROOT)/.makefile/make
 
 kill_processes: init
 	$(PROJECT_ROOT)/.makefile/kill_processes.sh
