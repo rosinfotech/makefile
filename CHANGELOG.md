@@ -6,6 +6,12 @@
 
 <!-- markdownlint-disable MD024 -->
 
+## [0.1.5] - 2026-04-26
+
+### Changed
+
+- Updated English version of `skill-makefile-update-version` to match Russian version with details on `make update-version` behavior and manual fallback;
+
 ## [0.1.4] - 2026-04-26
 
 ### Added

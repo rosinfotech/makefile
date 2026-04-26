@@ -24,8 +24,14 @@ description: Updating the version of a project managed by makefile
     - Edit line 2 of `.version` directly;
     - Run `make update-version` to update the version in `.version`;
 
-      - `make` commands must be run from the project root;
+      - `make` commands must be run from the project root by the AI agent in the terminal;
 
-    - After running `make update-version`, verify that lines 1 and 2 of `.version` match;
+      - `make update-version` copies the value from line 2 to line 1, after which both lines contain the new version:
+
+        - If file paths are specified in `.version` (starting from line 3), the old version is also replaced with the new one in those files;
+
+      - If `make update-version` is unavailable (no Makefile), perform the same action manually: copy the value from line 2 to line 1 and replace the version in the specified files;
+
+    - After running `make update-version`, verify that `.version` was updated and lines 1 and 2 match;
 
   - If the user specified a concrete version, follow the same steps but set the requested version instead of incrementing.
