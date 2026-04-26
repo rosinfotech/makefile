@@ -6,6 +6,12 @@
 
 <!-- markdownlint-disable MD024 -->
 
+## [0.1.3] - 2026-04-26
+
+### Added
+
+- Skill `skill-makefile-create-commit-push` for creating commits and pushing with makefile;
+
 ## [0.1.2] - 2026-04-25
 
 ### Fixed
