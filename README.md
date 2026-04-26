@@ -62,8 +62,6 @@ make update_version
 
 - `.makefile/setup.sh`, `.makefile/ssh_client.sh`, `.makefile/ssh_directory_upload.sh`, `.makefile/ssh_file_upload.sh` - allow you to write deployment .makefile like `.makefile/local_deploy_remote.sh`
 
-- `.makefile/skill-makefile-create-commit-push/` - Kilo skill for creating commits and pushing with makefile
-
 - You should create a `$HOME/.secrets.json` file to store and manage secrets:
 
   ```json
@@ -80,3 +78,9 @@ make update_version
       }
   }
   ```
+
+## AI Skills
+
+- `.makefile/skill-makefile-create-commit-push/` - Kilo skill for creating commits and pushing with makefile;
+
+- `.makefile/skill-makefile-update-version/` - Kilo skill for updating project version;

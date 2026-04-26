@@ -6,6 +6,16 @@
 
 <!-- markdownlint-disable MD024 -->
 
+## [0.1.4] - 2026-04-26
+
+### Added
+
+- Skill `skill-makefile-update-version` for updating project version;
+
+### Changed
+
+- Skill `skill-makefile-create-commit-push` now delegates version updating to `skill-makefile-update-version`;
+
 ## [0.1.3] - 2026-04-26
 
 ### Added

@@ -8,7 +8,7 @@ description: Creating a commit and pushing with the makefile project
 1. Check the project version via the `.version` file:
 
    - The file must be located in the project root;
-   - If it hasn't changed since the last commit, the version needs to be updated (see step 2);
+   - If it hasn't changed since the last commit, the version needs to be updated (see below);
 
 1.1. Review changes to be committed:
 
@@ -17,12 +17,7 @@ description: Creating a commit and pushing with the makefile project
 
 2. Accept a task from the user specifying which version to commit and push:
 
-   - If no version is specified, increment the patch version;
-   - If `.version` hasn't been updated since the last commit, increment line 2 of the file, then run `make update_version`:
-
-     - Line 2 of `.version` is edited directly;
-     - `make` commands must be run from the project root;
-     - After running `make update_version`, verify that lines 1 and 2 of `.version` match;
+   - The version must be updated following the skill `.makefile/skill-makefile-update-version/SKILL.md`;
 
 3. Add an entry to `CHANGELOG.md`:
 
@@ -41,6 +36,12 @@ description: Creating a commit and pushing with the makefile project
 5. Finally, suggest the command `make git_commit_push "<message>"`, where `<message>` is the commit message:
 
    - Keep it short and reflect the most significant change (the first one in CHANGELOG.md);
+
+   - It must start with a verb matching the main subheading from CHANGELOG.md, e.g. Added, Changed, Fixed, Deprecated, Removed, or Security:
+
+     - Followed by a colon and a short description starting with a capital letter, e.g. `Added: Support for new API endpoint`;
+     - While CHANGELOG.md may contain more detailed descriptions, the commit message should be as concise as possible since it appears in commit history and must be easy to read;
+
    - Do not include the version in the message — it is added automatically;
 
 5.1. The user must run this command themselves!
