@@ -81,6 +81,6 @@ make update_version
 
 ## AI Skills
 
-- `.makefile/skill-makefile-create-commit-push/` - Kilo skill for creating commits and pushing with makefile;
+- `.makefile/ai-skills/skill-makefile-create-commit-push/` - Kilo skill for creating commits and pushing with makefile;
 
-- `.makefile/skill-makefile-update-version/` - Kilo skill for updating project version;
+- `.makefile/ai-skills/skill-makefile-update-version/` - Kilo skill for updating project version;

@@ -6,11 +6,17 @@
 
 <!-- markdownlint-disable MD024 -->
 
+## [0.1.6] - 2026-05-01
+
+### Changed
+
+- Moved AI skills from `.makefile/skill-*` to `.makefile/ai-skills/skill-makefile-*` with Russian localization support;
+
 ## [0.1.5] - 2026-04-26
 
 ### Changed
 
-- Updated English version of `skill-makefile-update-version` to match Russian version with details on `make update-version` behavior and manual fallback;
+- Updated English version of `skill-makefile-update-version` to match Russian version with details on `make update_version` behavior and manual fallback;
 
 ## [0.1.4] - 2026-04-26
 
