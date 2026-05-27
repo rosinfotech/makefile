@@ -6,6 +6,12 @@
 
 <!-- markdownlint-disable MD024 -->
 
+## [0.1.7] - 2026-05-28
+
+### Added
+
+- Skill `skill-makefile-initialize-repository` for initializing a repository managed by the makefile project;
+
 ## [0.1.6] - 2026-05-01
 
 ### Changed
