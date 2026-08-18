@@ -26,6 +26,8 @@ Makes available commands inside any context directory:
 make link
 ```
 
+Commands are searched both in this global repository and in the local `.makefile` directory of the current project (same-named local scripts and Makefile targets take precedence over global ones).
+
 ### Canceling global launch
 
 ```bash
@@ -48,6 +50,14 @@ Performs a git commit, push and push --tags with the specified commit message an
 
 ```bash
 make git_commit_push "your commit message"
+```
+
+### `make echo`
+
+Greets the user, shows the current version and lists available commands marking them as global or local:
+
+```bash
+make echo
 ```
 
 ### `make update_version`

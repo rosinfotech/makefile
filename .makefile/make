@@ -3,10 +3,12 @@
 set -e
 
 SELF=$(readlink -f "$0" 2>/dev/null || python3 -c "import os; print(os.path.realpath('$0'))")
-PROJECT_ROOT=$(dirname "$(dirname "$SELF")")
+GLOBAL_ROOT=$(dirname "$(dirname "$SELF")")
+PHYS_GLOBAL_ROOT=$(cd "$GLOBAL_ROOT" && pwd -P)
+PHYS_PWD=$(cd "$PWD" && pwd -P)
 
-if [ -f "$PWD/Makefile" ]; then
-    exec /usr/bin/make "$@"
+if [ -f "$PWD/Makefile" ] && [ "$PHYS_PWD" != "$PHYS_GLOBAL_ROOT" ]; then
+    exec /usr/bin/make -f "$PHYS_GLOBAL_ROOT/Makefile" -f "$PWD/Makefile" "$@"
 else
-    exec /usr/bin/make -f "$PROJECT_ROOT/Makefile" PROJECT_ROOT="$PROJECT_ROOT" "$@"
+    exec /usr/bin/make -f "$PHYS_GLOBAL_ROOT/Makefile" "$@"
 fi

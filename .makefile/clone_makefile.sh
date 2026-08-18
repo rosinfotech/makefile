@@ -5,7 +5,7 @@ set -e
 SELF="$(cd "$(dirname "$0")" && pwd)/$(basename "$0")"
 PROJECT_ROOT="$(dirname "$(dirname "$SELF")")"
 
-FILES=(.editorconfig Makefile)
+FILES=(.editorconfig)
 
 for file in "${FILES[@]}"; do
     if [ -e "$PWD/$file" ]; then
@@ -15,6 +15,13 @@ for file in "${FILES[@]}"; do
         echo "Copied: $file"
     fi
 done
+
+if [ -f "$PWD/Makefile" ]; then
+    echo "Skipped (exists): Makefile"
+else
+    printf '.PHONY: init\n.SILENT: init\n\ninit:\n\tchmod +x .makefile/*.sh\n\n%%:\n\t@:\n' > "$PWD/Makefile"
+    echo "Created: Makefile (thin, global commands come from the linked makefile)"
+fi
 
 if [ -f "$PWD/.version" ]; then
     echo "Skipped (exists): .version"

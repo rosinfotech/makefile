@@ -6,6 +6,17 @@
 
 <!-- markdownlint-disable MD024 -->
 
+## [0.2.0] - 2026-08-19
+
+### Added
+
+- Combined local and global command search: with a local `Makefile` present, global commands stay available, while same-named local targets and local `.makefile` scripts take precedence;
+- `echo` command: greets the user, shows global and local project versions, lists available commands marked as global or local (colored output);
+
+### Changed
+
+- `clone_makefile` now generates a thin local `Makefile` instead of copying the global one;
+
 ## [0.1.7] - 2026-05-28
 
 ### Added
