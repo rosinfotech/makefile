@@ -6,6 +6,12 @@
 
 <!-- markdownlint-disable MD024 -->
 
+## [0.2.1] - 2026-09-06
+
+### Added
+
+- Script `.makefile/ssh_directory_download_as_archive.sh` for downloading a remote directory via SSH as a `tar.gz` archive;
+
 ## [0.2.0] - 2026-08-19
 
 ### Added

@@ -70,7 +70,7 @@ make update_version
 
 ## Additional .makefile
 
-- `.makefile/setup.sh`, `.makefile/ssh_client.sh`, `.makefile/ssh_directory_upload.sh`, `.makefile/ssh_file_upload.sh` - allow you to write deployment .makefile like `.makefile/local_deploy_remote.sh`
+- `.makefile/setup.sh`, `.makefile/ssh_client.sh`, `.makefile/ssh_directory_upload.sh`, `.makefile/ssh_directory_download_as_archive.sh`, `.makefile/ssh_file_upload.sh` - allow you to write deployment .makefile like `.makefile/local_deploy_remote.sh`
 
 - You should create a `$HOME/.secrets.json` file to store and manage secrets:
 
