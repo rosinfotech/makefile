@@ -25,7 +25,7 @@ sshDirectoryDownloadAsArchive() {
     archive_dir="$(dirname "$archive")"
     mkdir -p "$archive_dir"
 
-    sshpass -p "$SSH_PASSWORD" ssh $SSH_OPTIONS $SSH_CONNECTION \
+    "${SSH_AUTH_CMD[@]}" ssh $SSH_OPTIONS $SSH_CONNECTION \
         "tar -czf - -C '${parent}' '${name}'" > "$archive" || exit_code=$?
 
     if [ $exit_code -ne 0 ] || [ ! -s "$archive" ]; then

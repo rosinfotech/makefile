@@ -3,24 +3,48 @@
 set -e
 
 SSH_PASSWORD=""
-SSH_OPTIONS="-o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null"
+SSH_KEY=""
+SSH_AUTH_CMD=()
+SSH_OPTIONS_BASE="-o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null"
+SSH_OPTIONS="$SSH_OPTIONS_BASE"
 SSH_CONNECTION=""
 SSH_HOST=""
 SSH_PORT=""
 SSH_USERNAME=""
 
+sshClientSetupAuth() {
+    SSH_OPTIONS="$SSH_OPTIONS_BASE"
+    SSH_AUTH_CMD=()
+
+    if [ -n "$SSH_KEY" ] && [ -f "$SSH_KEY" ]; then
+        SSH_OPTIONS="${SSH_OPTIONS} -i ${SSH_KEY} -o IdentitiesOnly=yes -o BatchMode=yes"
+    elif [ -n "$SSH_PASSWORD" ]; then
+        SSH_AUTH_CMD=(sshpass -p "$SSH_PASSWORD")
+    else
+        echo "Error: Neither ssh key nor password is available"
+        return 1
+    fi
+}
+
 sshClient() {
     case $1 in
         init)
             if [ $# -lt 4 ]; then
-                echo "Usage: sshClient init <host> <port> <username> <password>"
+                echo "Usage: sshClient init <host> <port> <username> [password] [ssh_key]"
                 return 1
             fi
             SSH_HOST="$2"
             SSH_PORT="$3"
             SSH_USERNAME="$4"
-            SSH_PASSWORD="$5"
+            SSH_PASSWORD="${5:-}"
+            SSH_KEY="${6:-}"
+            SSH_KEY="${SSH_KEY/#\~/$HOME}"
+            if [ -n "$SSH_KEY" ] && [ ! -f "$SSH_KEY" ]; then
+                echo "Warning: ssh key not found: $SSH_KEY"
+                SSH_KEY=""
+            fi
             SSH_CONNECTION="${SSH_USERNAME}@${SSH_HOST} -p ${SSH_PORT}"
+            sshClientSetupAuth || return 1
             ;;
         exec)
             if [ -z "$SSH_CONNECTION" ]; then
@@ -34,7 +58,7 @@ sshClient() {
             fi
 
             local cmd="$2"
-            sshpass -p "$SSH_PASSWORD" ssh $SSH_OPTIONS $SSH_CONNECTION "$cmd"
+            "${SSH_AUTH_CMD[@]}" ssh $SSH_OPTIONS $SSH_CONNECTION "$cmd"
             local exit_code=$?
 
             if [ $exit_code -ne 0 ]; then
@@ -54,7 +78,7 @@ sshClient() {
             fi
 
             local cmd="$2"
-            sshpass -p "$SSH_PASSWORD" ssh $SSH_OPTIONS $SSH_CONNECTION "$cmd" || true
+            "${SSH_AUTH_CMD[@]}" ssh $SSH_OPTIONS $SSH_CONNECTION "$cmd" || true
             return 0
             ;;
         scp)
@@ -71,7 +95,7 @@ sshClient() {
             local source="$2"
             local destination="$3"
 
-            sshpass -p "$SSH_PASSWORD" scp -P "$SSH_PORT" \
+            "${SSH_AUTH_CMD[@]}" scp -P "$SSH_PORT" \
                 $SSH_OPTIONS \
                 "$source" "${SSH_USERNAME}@${SSH_HOST}:${destination}"
             local exit_code=$?
@@ -101,7 +125,7 @@ sshClient() {
                 exclude_opts="--exclude='$exclude_pattern'"
             fi
 
-            sshpass -p "$SSH_PASSWORD" rsync -avz -e "ssh -p $SSH_PORT $SSH_OPTIONS" \
+            "${SSH_AUTH_CMD[@]}" rsync -avz -e "ssh -p $SSH_PORT $SSH_OPTIONS" \
                 --exclude-from='./.makefile/.rsync-exclude' \
                 $exclude_opts \
                 "$source/" "${SSH_USERNAME}@${SSH_HOST}:${destination}/"
@@ -114,6 +138,9 @@ sshClient() {
             ;;
         cleanup)
             SSH_PASSWORD=""
+            SSH_KEY=""
+            SSH_AUTH_CMD=()
+            SSH_OPTIONS="$SSH_OPTIONS_BASE"
             SSH_CONNECTION=""
             SSH_HOST=""
             SSH_PORT=""

@@ -82,12 +82,15 @@ make update_version
                   "host": "host",
                   "port": "port",
                   "username": "username",
-                  "password": "password"
+                  "password": "password",
+                  "ssh": "~/.ssh/id_ed25519"
               }
           }
       }
   }
   ```
+
+  The `ssh` field is optional: it points to a local private key — when set and the file exists, key authentication is used instead of the password (accepted as an optional `sshClient init` argument as well).
 
 ## AI Skills
 

@@ -18,13 +18,17 @@ main() {
     local port=$(getHomeSecret '.tech.rosinfo.ssh.port')
     local username=$(getHomeSecret '.tech.rosinfo.ssh.username')
     local password=$(getHomeSecret '.tech.rosinfo.ssh.password')
+    local ssh_key=$(getHomeSecret '.tech.rosinfo.ssh.ssh')
+    if [ "$ssh_key" = "null" ]; then
+        ssh_key=""
+    fi
 
-    if [ -z "$host" ] || [ -z "$port" ] || [ -z "$username" ] || [ -z "$password" ]; then
+    if [ -z "$host" ] || [ -z "$port" ] || [ -z "$username" ] || { [ -z "$password" ] && [ -z "$ssh_key" ]; }; then
         echo "Error: Failed to load SSH secrets from $SECRETS_FILE"
         exit 1
     fi
 
-    sshClient init "$host" "$port" "$username" "$password"
+    sshClient init "$host" "$port" "$username" "$password" "$ssh_key"
 
     sshClient execf "rm -rf /home/rosinfo.tech/www"
 

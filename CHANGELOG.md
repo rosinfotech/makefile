@@ -6,6 +6,16 @@
 
 <!-- markdownlint-disable MD024 -->
 
+## [0.2.2] - 2026-09-22
+
+### Added
+
+- SSH key authentication in `ssh_client.sh`: optional ssh key path argument for `sshClient init`, the key takes precedence over the password;
+
+### Changed
+
+- `ssh_directory_download_as_archive.sh` and `local_deploy_remote.sh` use the shared auth mechanism; `local_deploy_remote.sh` reads the optional ssh key from secrets;
+
 ## [0.2.1] - 2026-09-06
 
 ### Added
