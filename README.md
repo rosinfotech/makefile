@@ -101,6 +101,10 @@ make update_version
 
 ## AI Skills
 
-- `ai-skills/skill-makefile-create-commit-push/` (github.com/rosinfotech/makefile/tree/main/ai-skills) - Kilo skill for creating commits and pushing with makefile;
+Agent skills in the cross-agent `SKILL.md` format (any agent that supports the standard can use them - Kilo, Claude Code and others; typically referenced by their GitHub URLs from an `AGENTS.md` instructions file):
 
-- `ai-skills/skill-makefile-update-version/` - Kilo skill for updating project version;
+- `ai-skills/skill-makefile-create-commit-push/` - commit and push following the makefile workflow (github.com/rosinfotech/makefile/tree/main/ai-skills);
+
+- `ai-skills/skill-makefile-initialize-repository/` - initialize a git repository for the makefile workflow;
+
+- `ai-skills/skill-makefile-update-version/` - update the project version (.version, CHANGELOG.md);

@@ -4,6 +4,12 @@
 
 # Changelog
 
+## [0.2.4] - 2026-09-26
+
+### Changed
+
+- README: the AI Skills section now describes the skills as cross-agent `SKILL.md`-format agent skills (usable by any agent supporting the standard, referenced from `AGENTS.md`) instead of "Kilo skills"; the missing `skill-makefile-initialize-repository` entry added
+
 <!-- markdownlint-disable MD024 -->
 
 ## [0.2.3] - 2026-09-26
