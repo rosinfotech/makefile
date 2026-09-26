@@ -1,20 +1,16 @@
 GLOBAL_ROOT := $(patsubst %/,%,$(dir $(abspath $(lastword $(MAKEFILE_LIST)))))
 
 define resolve_script
-$(if $(wildcard $(CURDIR)/.makefile/$(1)),$(CURDIR)/.makefile/$(1),$(GLOBAL_ROOT)/.makefile/$(1))
+$(if $(wildcard $(CURDIR)/.makefile/$(1)),$(CURDIR)/.makefile/$(1),$(if $(wildcard $(CURDIR)/.makefile/vendor/rosinfotech/$(1)),$(CURDIR)/.makefile/vendor/rosinfotech/$(1),$(GLOBAL_ROOT)/.makefile/$(1)))
 endef
 
-.PHONY: clear clone_makefile echo git_commit git_commit_push git_commit_version init kill_processes link local_deploy_remote setup unlink update_version
-.SILENT: clear clone_makefile echo git_commit git_commit_push git_commit_version init kill_processes link local_deploy_remote setup unlink update_version
+.PHONY: clear echo git_commit git_commit_push git_commit_version init kill_processes setup show_version update_version vendor
+.SILENT: clear echo git_commit git_commit_push git_commit_version init kill_processes setup show_version update_version vendor
 
 .DEFAULT_GOAL := echo
 
 clear: init
 	$(call resolve_script,clear.sh)
-
-clone_makefile:
-	$(call resolve_script,clone_makefile.sh)
-
 echo: init
 	GLOBAL_ROOT="$(GLOBAL_ROOT)" $(call resolve_script,echo.sh)
 
@@ -28,25 +24,20 @@ git_commit_version: init
 	$(call resolve_script,git_commit_version.sh) "$(filter-out $@,$(MAKECMDGOALS))"
 
 init:
-	chmod +x $(GLOBAL_ROOT)/.makefile/*.sh $(GLOBAL_ROOT)/.makefile/make $(wildcard $(CURDIR)/.makefile/*.sh $(CURDIR)/.makefile/make)
+	chmod +x $(GLOBAL_ROOT)/.makefile/*.sh $(wildcard $(CURDIR)/.makefile/*.sh $(CURDIR)/.makefile/vendor/rosinfotech/*.sh)
 
 kill_processes: init
 	$(call resolve_script,kill_processes.sh)
-
-link: init
-	$(call resolve_script,link.sh)
-
-local_deploy_remote: init
-	$(call resolve_script,local_deploy_remote.sh)
-
 setup: init
 	$(call resolve_script,setup.sh)
 
-unlink: init
-	$(call resolve_script,unlink.sh)
+show_version: init
+	$(call resolve_script,version_show.sh)
 
 update_version: init
-	$(call resolve_script,update_version.sh)
+	$(call resolve_script,version_update.sh)
+vendor: init
+	$(call resolve_script,vendor.sh) "$(filter-out $@,$(MAKECMDGOALS))"
 
 %:
 	@:

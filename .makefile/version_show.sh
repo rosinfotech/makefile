@@ -2,8 +2,10 @@
 
 LIB_DIR="$(cd "$(dirname "$0")" && pwd)"
 
-source "$LIB_DIR/get_version.sh"
+source "$LIB_DIR/version_get.sh"
 
 showVersion() {
     echo "Using version: $(getVersion)"
 }
+
+showVersion

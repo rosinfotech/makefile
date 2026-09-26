@@ -18,29 +18,34 @@ Makes available work with SSH files/directories transferring and other:
 make setup
 ```
 
-### Global launch
+### Vendoring (project independence)
 
-Makes available commands inside any context directory:
-
-```bash
-make link
-```
-
-Commands are searched both in this global repository and in the local `.makefile` directory of the current project (same-named local scripts and Makefile targets take precedence over global ones).
-
-### Canceling global launch
+Makes a project independent from this repository - the only installation
+path (the global-link workflow is gone):
 
 ```bash
-make unlink
+make vendor /path/to/project     # from a clone of this repository
 ```
 
-### Cloning Makefile
+What it does:
 
-Makes the Makefile part of your project - independent commands launch:
+- copies the framework into `.makefile/vendor/rosinfotech/` (fully managed
+  directory, replaced wholesale on every run; a README manifest inside
+  records the source commit SHA and update instructions);
+- prepends standalone definitions to the project Makefile on the first run
+  (marker-guarded; the original is backed up as `Makefile.bak.<timestamp>`;
+  repeated runs only refresh the vendor directory);
+- when the target has no Makefile, scaffolds a minimal project
+  (`.version`, `CHANGELOG.md`, `README.md`, `.editorconfig`) - this
+  scaffolds the project files when the target has no Makefile;
+- validates the result with the system make and rolls back on failure.
 
-```bash
-make clone_makefile
-```
+Project scripts in `.makefile/` are never touched and take precedence over
+the vendored ones (`resolve_script` chain: `.makefile/` ->
+`.makefile/vendor/rosinfotech/`). After vendoring the plain system `make`
+runs the project everywhere - no clone of this repository is required on
+the machines using the project. Update the framework with `git pull` in a
+clone of this repository followed by `make vendor /path/to/project`.
 
 ## Predefined make commands
 
@@ -62,7 +67,7 @@ make echo
 
 ### `make update_version`
 
-Synchronizes project version values. Runs the `.makefile/update_version.sh` script. The script reads the new version value from the 2nd line of the `./.version` file. The `.version` file also contains the current version (line 1) and relative file paths where the current version should be changed.
+Synchronizes project version values. Runs the `.makefile/version_update.sh` script. The script reads the new version value from the 2nd line of the `./.version` file. The `.version` file also contains the current version (line 1) and relative file paths where the current version should be changed.
 
 ```bash
 make update_version
@@ -70,21 +75,23 @@ make update_version
 
 ## Additional .makefile
 
-- `.makefile/setup.sh`, `.makefile/ssh_client.sh`, `.makefile/ssh_directory_upload.sh`, `.makefile/ssh_directory_download_as_archive.sh`, `.makefile/ssh_file_upload.sh` - allow you to write deployment .makefile like `.makefile/local_deploy_remote.sh`
+- `.makefile/ssh_client.sh` - the shared SSH transport: `sshClient` (init/exec/execf/scp/rsync/download/cleanup) plus the file/directory transfer helpers (`sshFileUpload`, `sshDirectoryUpload`, `sshDirectoryDownload`, `sshDirectoryDownloadAsArchive`). Auth: password via sshpass or an ssh key (the key takes precedence). Pure transport - no server registry and no logging; consumers layer their own on top (see the infra repository for the server-registry pattern).
 
-- You should create a `$HOME/.secrets.json` file to store and manage secrets:
+- `.makefile/secrets.sh` - generic secrets access: resolves the secrets file (`SECRETS_FILE` env override -> `~/.secrets.json`), checks jq and provides `getSecret <jq-path>`, `secretFile`, `requireSecrets`. The schema inside the file is owned by the consumer.
+
+- `.makefile/setup.sh` - installs the system prerequisites (sshpass, rsync);
+
+- You should create a `$HOME/.secrets.json` file to store and manage secrets (schema is owned by the consumer; `SECRETS_FILE` env var overrides the path):
 
   ```json
   {
-      "tech": {
-          "rosinfo": {
-              "ssh": {
-                  "host": "host",
-                  "port": "port",
-                  "username": "username",
-                  "password": "password",
-                  "ssh": "~/.ssh/id_ed25519"
-              }
+      "example": {
+          "ssh": {
+              "host": "host",
+              "port": "port",
+              "username": "username",
+              "password": "password",
+              "ssh": "~/.ssh/id_ed25519"
           }
       }
   }
@@ -94,6 +101,6 @@ make update_version
 
 ## AI Skills
 
-- `.makefile/ai-skills/skill-makefile-create-commit-push/` - Kilo skill for creating commits and pushing with makefile;
+- `ai-skills/skill-makefile-create-commit-push/` (github.com/rosinfotech/makefile/tree/main/ai-skills) - Kilo skill for creating commits and pushing with makefile;
 
-- `.makefile/ai-skills/skill-makefile-update-version/` - Kilo skill for updating project version;
+- `ai-skills/skill-makefile-update-version/` - Kilo skill for updating project version;

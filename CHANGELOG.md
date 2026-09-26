@@ -6,6 +6,25 @@
 
 <!-- markdownlint-disable MD024 -->
 
+## [0.2.3] - 2026-09-26
+
+### Added
+
+- `vendor` command: makes an existing project independent from the globally linked makefile - prepends standalone definitions (`resolve_script`, `init`, framework targets) to the project Makefile, copies all framework scripts into the project `.makefile/` (never overwrites; Makefile backed up as `Makefile.bak.<timestamp>`), validates the result with the system make and is idempotent via a marker block
+- `secrets.sh`: generic secrets access (SECRETS_FILE env override -> ~/.secrets.json, jq checks, getSecret/requireSecrets helpers; the schema is owned by the consumer)
+- `ssh_client.sh` now carries the full SSH transport consolidated from the infra repository: sshClient (init/exec/execf/scp/rsync/download/cleanup), retry, key-or-password auth and the file/directory transfer helpers (sshFileUpload, sshDirectoryUpload, sshDirectoryDownload, sshDirectoryDownloadAsArchive)
+
+### Changed
+
+- `vendor` takes an optional path argument (`make vendor /path/to/project`), scaffolds an empty project (replaces clone_makefile for the no-link workflow), refreshes `.makefile/vendor/rosinfotech/` on repeated runs (update mode) and refuses to vendor the makefile repository itself; the vendor directory carries a README manifest with the source commit SHA
+- `ai-skills/` moved to the repository root and is no longer vendored into projects (reference the skills by their GitHub URLs); `vendor` copies only the framework scripts
+- `resolve_script` chain: local `.makefile/` -> `.makefile/vendor/rosinfotech/` -> global repository
+- version scripts renamed: `get_version.sh` -> `version_get.sh`, `show_version.sh` -> `version_show.sh`, `update_version.sh` -> `version_update.sh` (targets keep their names); the lost `show_version` target restored
+
+### Removed
+
+- `local_deploy_remote.sh` (a project-specific rosinfo.tech deploy example) and the duplicate transport scripts `ssh_file_upload.sh`, `ssh_directory_upload.sh`, `ssh_directory_download_as_archive.sh`, `get_home_secret.sh` (superseded by the consolidated `ssh_client.sh` and `secrets.sh`); `link.sh`, `unlink.sh` and the `make` wrapper - the global-link workflow is gone, vendoring is the only installation path; `clone_makefile.sh` - superseded by the vendor scaffolding
+
 ## [0.2.2] - 2026-09-22
 
 ### Added
