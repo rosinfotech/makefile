@@ -17,7 +17,7 @@ description: Creating a commit and pushing with the makefile project
 
 2. Accept a task from the user specifying which version to commit and push:
 
-   - The version must be updated following the skill https://github.com/rosinfotech/makefile/blob/main/ai-skills/skill-makefile-update-version/SKILL.md (read via raw.githubusercontent.com);
+   - The version must be updated following the skill https://github.com/rosinfotech/makefile/blob/main/ai-skills/skill-makefile-version-update/SKILL.md (read via raw.githubusercontent.com);
 
 3. Add an entry to `CHANGELOG.md`:
 

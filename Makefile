@@ -4,8 +4,8 @@ define resolve_script
 $(if $(wildcard $(CURDIR)/.makefile/$(1)),$(CURDIR)/.makefile/$(1),$(if $(wildcard $(CURDIR)/.makefile/vendor/rosinfotech/$(1)),$(CURDIR)/.makefile/vendor/rosinfotech/$(1),$(GLOBAL_ROOT)/.makefile/$(1)))
 endef
 
-.PHONY: clear echo git_commit git_commit_push git_commit_version init kill_processes setup show_version update_version vendor
-.SILENT: clear echo git_commit git_commit_push git_commit_version init kill_processes setup show_version update_version vendor
+.PHONY: clear echo git_commit git_commit_push git_commit_version init kill_processes setup version_show version_update vendor
+.SILENT: clear echo git_commit git_commit_push git_commit_version init kill_processes setup version_show version_update vendor
 
 .DEFAULT_GOAL := echo
 
@@ -31,10 +31,10 @@ kill_processes: init
 setup: init
 	$(call resolve_script,setup.sh)
 
-show_version: init
+version_show: init
 	$(call resolve_script,version_show.sh)
 
-update_version: init
+version_update: init
 	$(call resolve_script,version_update.sh)
 vendor: init
 	$(call resolve_script,vendor.sh) "$(filter-out $@,$(MAKECMDGOALS))"

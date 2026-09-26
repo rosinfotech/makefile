@@ -7,8 +7,9 @@
 #                                   (source repo, commit SHA, update hints)
 #   Makefile                        standalone block prepended on the first
 #                                   run (marker-guarded, backed up); on
-#                                   later runs only the vendor directory is
-#                                   refreshed (update mode)
+#                                   later runs the block is upgraded to the
+#                                   current template when it differs (update
+#                                   mode, backed up)
 #
 # When <path> has no Makefile a minimal project is scaffolded (Makefile
 # with the standalone block, .version, CHANGELOG.md, README.md,
@@ -16,6 +17,8 @@
 #
 # The vendor directory is fully managed: it is replaced wholesale on
 # every run; project scripts in .makefile/ are never touched.
+# vendor.sh itself is never vendored: refreshing a project is possible
+# only from a clone of this repository (see the README manifest).
 
 set -e
 
@@ -58,12 +61,53 @@ CHANGELOG_HEAD
     [ -f README.md ] || printf '# Welcome\n' > README.md
 fi
 
-# --- 2. Makefile: prepend the standalone block on the first run --------
+# --- 2. Makefile: prepend the standalone block, upgrade it on later runs -
+
+END_MARKER="# --- end vendored makefile framework ---"
+block_file="$(mktemp)"
+{
+    printf '%s\n' "$MARKER"
+    printf '%s\n' '# Standalone definitions: this Makefile does not require the globally'
+    printf '%s\n' '# linked make (update: make vendor <this path>; remove: delete this block'
+    printf '%s\n' '# and .makefile/vendor/rosinfotech/).'
+    printf '\n'
+    printf 'define resolve_script\n$(if $(wildcard $(CURDIR)/.makefile/$(1)),$(CURDIR)/.makefile/$(1),$(CURDIR)/.makefile/vendor/rosinfotech/$(1))\nendef\n\n'
+    printf '.DEFAULT_GOAL := echo\n'
+    printf '.PHONY: echo init clear git_commit git_commit_push git_commit_version kill_processes setup version_show version_update\n'
+    printf '.SILENT: echo init clear git_commit git_commit_push git_commit_version kill_processes setup version_show version_update\n\n'
+    printf 'init:\n\tchmod +x $(wildcard $(CURDIR)/.makefile/*.sh) $(wildcard $(CURDIR)/.makefile/vendor/rosinfotech/*.sh)\n\n'
+    printf 'echo: init\n\tGLOBAL_ROOT="$(CURDIR)/.makefile/vendor/rosinfotech" $(call resolve_script,echo.sh)\n\n'
+    printf 'clear: init\n\t$(call resolve_script,clear.sh)\n\n'
+    printf 'git_commit: init\n\t$(call resolve_script,git_commit.sh) "$(filter-out $@,$(MAKECMDGOALS))"\n\n'
+    printf 'git_commit_push: init\n\t$(call resolve_script,git_commit_push.sh) "$(filter-out $@,$(MAKECMDGOALS))"\n\n'
+    printf 'git_commit_version: init\n\t$(call resolve_script,git_commit_version.sh) "$(filter-out $@,$(MAKECMDGOALS))"\n\n'
+    printf 'kill_processes: init\n\t$(call resolve_script,kill_processes.sh)\n\n'
+    printf 'setup: init\n\t$(call resolve_script,setup.sh)\n\n'
+    printf 'version_show: init\n\t$(call resolve_script,version_show.sh)\n\n'
+    printf 'version_update: init\n\t$(call resolve_script,version_update.sh)\n\n'
+    printf '%s\n' "$END_MARKER"
+} > "$block_file"
 
 if [ "$scaffold" -eq 1 ]; then
     : > Makefile
 elif grep -qF "$MARKER" Makefile; then
-    echo "Makefile already vendored - refreshing ${DEST_REL}/ only"
+    start_line="$(awk -v m="$MARKER" 'index($0, m) == 1 { print NR; exit }' Makefile)"
+    end_line="$(awk -v m="$END_MARKER" 'index($0, m) == 1 && NR > 1 { print NR; exit }' Makefile)"
+    if [ -z "$start_line" ] || [ -z "$end_line" ] || [ "$start_line" -ge "$end_line" ]; then
+        echo "Warning: vendored block markers not found or malformed - Makefile left untouched" >&2
+    elif [ "$(sed -n "${start_line},${end_line}p" Makefile)" = "$(cat "$block_file")" ]; then
+        echo "Makefile already vendored - refreshing ${DEST_REL}/ only"
+    else
+        backup="Makefile.bak.$(date +%Y_%m_%d_%H%M%S)"
+        cp Makefile "$backup"
+        {
+            sed -n "1,$((start_line - 1))p" Makefile
+            cat "$block_file"
+            sed -n "$((end_line + 1)),\$p" Makefile
+        } > Makefile.new
+        mv Makefile.new Makefile
+        echo "Makefile: vendored block upgraded to the current template (backup: ${backup#./})"
+    fi
 else
     backup="Makefile.bak.$(date +%Y_%m_%d_%H%M%S)"
     cp Makefile "$backup"
@@ -71,24 +115,8 @@ fi
 
 if [ "$scaffold" -eq 1 ] || ! grep -qF "$MARKER" Makefile 2>/dev/null; then
     {
-        printf '%s\n' "$MARKER"
-        printf '%s\n' '# Standalone definitions: this Makefile does not require the globally'
-        printf '%s\n' '# linked make (update: make vendor <this path>; remove: delete this block'
-        printf '%s\n' '# and .makefile/vendor/rosinfotech/).'
+        cat "$block_file"
         printf '\n'
-        printf 'define resolve_script\n$(if $(wildcard $(CURDIR)/.makefile/$(1)),$(CURDIR)/.makefile/$(1),$(CURDIR)/.makefile/vendor/rosinfotech/$(1))\nendef\n\n'
-        printf '.PHONY: init clear git_commit git_commit_push git_commit_version kill_processes setup show_version update_version\n'
-        printf '.SILENT: init clear git_commit git_commit_push git_commit_version kill_processes setup show_version update_version\n\n'
-        printf 'init:\n\tchmod +x $(wildcard $(CURDIR)/.makefile/*.sh) $(wildcard $(CURDIR)/.makefile/vendor/rosinfotech/*.sh)\n\n'
-        printf 'clear: init\n\t$(call resolve_script,clear.sh)\n\n'
-        printf 'git_commit: init\n\t$(call resolve_script,git_commit.sh) "$(filter-out $@,$(MAKECMDGOALS))"\n\n'
-        printf 'git_commit_push: init\n\t$(call resolve_script,git_commit_push.sh) "$(filter-out $@,$(MAKECMDGOALS))"\n\n'
-        printf 'git_commit_version: init\n\t$(call resolve_script,git_commit_version.sh) "$(filter-out $@,$(MAKECMDGOALS))"\n\n'
-        printf 'kill_processes: init\n\t$(call resolve_script,kill_processes.sh)\n\n'
-        printf 'setup: init\n\t$(call resolve_script,setup.sh)\n\n'
-        printf 'show_version: init\n\t$(call resolve_script,version_show.sh)\n\n'
-        printf 'update_version: init\n\t$(call resolve_script,version_update.sh)\n\n'
-        printf '# --- end vendored makefile framework ---\n\n'
         [ "$scaffold" -eq 0 ] && cat "$backup"
     } > Makefile.new
     mv Makefile.new Makefile
@@ -98,6 +126,17 @@ if [ "$scaffold" -eq 1 ] || ! grep -qF "$MARKER" Makefile 2>/dev/null; then
         echo "Makefile: created with the standalone definitions"
     fi
 fi
+rm -f "$block_file"
+
+# --- 2b. Warn about legacy framework targets below the vendored block --
+
+legacy="$(sed -n '/^# --- end vendored makefile framework ---$/,$p' Makefile | grep -nE '^(echo|init|clear|git_commit|git_commit_push|git_commit_version|kill_processes|setup|show_version|update_version|version_show|version_update):' || true)"
+if [ -n "$legacy" ]; then
+    echo "Warning: legacy framework targets found below the vendored block (GNU make" >&2
+    echo "lets these later definitions override the vendored ones):" >&2
+    printf '%s\n' "$legacy" >&2
+    echo "Remove them - the vendored block already provides these targets." >&2
+fi
 
 # --- 3. Refresh the vendor directory (fully managed) --------------------
 
@@ -106,9 +145,11 @@ mkdir -p "$DEST_REL"
 count=0
 for item in "$SRC"/*.sh; do
     [ -e "$item" ] || continue
+    [ "$(basename "$item")" = "vendor.sh" ] && continue
     cp -R "$item" "$DEST_REL/"
     count=$((count + 1))
 done
+[ -f "$SRC/../.version" ] && cp "$SRC/../.version" "$DEST_REL/.version"
 find "$DEST_REL" -name "*.sh" -exec chmod +x {} +
 
 # --- 4. README manifest ---------------------------------------------------

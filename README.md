@@ -59,18 +59,26 @@ make git_commit_push "your commit message"
 
 ### `make echo`
 
-Greets the user, shows the current version and lists available commands marking them as global or local:
+Greets the user, shows the current version and lists available commands marking the ones whose scripts come from the vendored framework (`.makefile/vendor/rosinfotech/`):
 
 ```bash
 make echo
 ```
 
-### `make update_version`
+### `make version_show`
+
+Prints the current project version. Runs the `.makefile/version_show.sh` script.
+
+```bash
+make version_show
+```
+
+### `make version_update`
 
 Synchronizes project version values. Runs the `.makefile/version_update.sh` script. The script reads the new version value from the 2nd line of the `./.version` file. The `.version` file also contains the current version (line 1) and relative file paths where the current version should be changed.
 
 ```bash
-make update_version
+make version_update
 ```
 
 ## Additional .makefile
@@ -107,4 +115,4 @@ Agent skills in the cross-agent `SKILL.md` format (any agent that supports the s
 
 - `ai-skills/skill-makefile-initialize-repository/` - initialize a git repository for the makefile workflow;
 
-- `ai-skills/skill-makefile-update-version/` - update the project version (.version, CHANGELOG.md);
+- `ai-skills/skill-makefile-version-update/` - update the project version (.version, CHANGELOG.md);

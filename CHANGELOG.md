@@ -4,6 +4,24 @@
 
 # Changelog
 
+## [0.2.5] - 2026-09-26
+
+### Changed
+
+- `echo` redesigned for the vendor workflow: all commands are local now, commands whose scripts come from `.makefile/vendor/rosinfotech/` are marked as `(vendored)` (the old global/local marking came from the removed link mechanism)
+- targets renamed to match their scripts: `show_version` -> `version_show`, `update_version` -> `version_update`
+- ai-skills directory renamed: `skill-makefile-update-version` -> `skill-makefile-version-update` (frontmatter names and cross-references updated)
+
+### Added
+
+- vendored Makefile block now includes the `echo` target and sets `.DEFAULT_GOAL := echo`; the framework `.version` is vendored so `echo` shows the framework version
+- `vendor` upgrades an outdated vendored block to the current template on repeated runs (marker-scoped, backed up)
+- `vendor` warns when legacy framework targets below the vendored block would override it
+
+### Fixed
+
+- `vendor` no longer copies `vendor.sh` itself into vendored projects: a vendored copy resolved wrong source paths and could wipe the vendor directory when run manually
+
 ## [0.2.4] - 2026-09-26
 
 ### Changed

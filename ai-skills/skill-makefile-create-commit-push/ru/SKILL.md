@@ -17,7 +17,7 @@ description: Создание коммита и пуша с помощью пр�
 
 2. Принять задачу от пользователя с указанием того, какая версия проекта должна быть закоммичена и запушена:
 
-  - Версия должна быть обновлена в соответствии со скилом https://github.com/rosinfotech/makefile/blob/main/ai-skills/skill-makefile-update-version/ru/SKILL.md (читать через raw.githubusercontent.com);
+  - Версия должна быть обновлена в соответствии со скилом https://github.com/rosinfotech/makefile/blob/main/ai-skills/skill-makefile-version-update/ru/SKILL.md (читать через raw.githubusercontent.com);
 
 3. Делается соответствующая запись в `CHANGELOG.md`, при этом:
 

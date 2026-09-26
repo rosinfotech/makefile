@@ -28,54 +28,79 @@ get_commands() {
     sed -n '/:=/!s/^\([a-zA-Z0-9_][a-zA-Z0-9_-]*\):.*/\1/p' "$1/Makefile" 2>/dev/null | sort -u | grep -v '^init$' | tr '\n' ' ' || true
 }
 
-GLOBAL_VERSION=$(get_version "$PHYS_GLOBAL_ROOT")
-LOCAL_VERSION=""
-if [ -f "$PWD/.version" ] && [ "$PHYS_PWD" != "$PHYS_GLOBAL_ROOT" ]; then
-    LOCAL_VERSION=$(get_version "$PHYS_PWD")
-fi
+# cmd<TAB>script for every target whose recipe runs a script (via
+# resolve_script or a direct .makefile/ path); the first script wins
+get_script_commands() {
+    awk '
+        /^[\t]/ {
+            if (cmd != "" && script == "") {
+                if (match($0, /resolve_script,[^) \t]*\.sh/)) {
+                    script = substr($0, RSTART + 15, RLENGTH - 15)
+                } else if (match($0, /[^ \t]*\.makefile\/[^ \t]*\.sh/)) {
+                    script = substr($0, RSTART, RLENGTH)
+                }
+            }
+            next
+        }
+        {
+            if (cmd != "" && script != "") {
+                print cmd "\t" script
+            }
+            cmd = ""
+            script = ""
+            if ($0 ~ /^[a-zA-Z0-9_][a-zA-Z0-9_-]*:/ && $0 !~ /:=/) {
+                cmd = $1
+                sub(/:.*/, "", cmd)
+                if (cmd == "init") {
+                    cmd = ""
+                }
+            }
+        }
+        END {
+            if (cmd != "" && script != "") {
+                print cmd "\t" script
+            }
+        }
+    ' "$1/Makefile"
+}
+
+# A command is vendored when its script lives in .makefile/vendor/rosinfotech
+# (and not in the project .makefile/ - project scripts always win)
+is_vendored() {
+    script="$(printf '%s\n' "$SCRIPT_MAP" | awk -F '\t' -v c="$1" '$1 == c { print $2; exit }')"
+    [ -z "$script" ] && return 1
+    case "$script" in
+        */vendor/*)
+            return 0
+            ;;
+    esac
+    [ ! -f "$PHYS_PWD/.makefile/$script" ] && [ -f "$PHYS_PWD/.makefile/vendor/rosinfotech/$script" ]
+}
+
+FRAMEWORK_VERSION="$(get_version "$PHYS_GLOBAL_ROOT")"
 
 echo
 echo
 echo -e "Hello, ${BLUE}${USER:-$(whoami)}${NC}!"
-echo -e "This is rosinfo.tech makefile util ${BLUE}v$GLOBAL_VERSION${NC}"
+echo -e "This is rosinfo.tech makefile util ${BLUE}v$FRAMEWORK_VERSION${NC}"
 echo "See https://github.com/rosinfotech/makefile"
-if [ -n "$LOCAL_VERSION" ]; then
+LOCAL_VERSION="$(get_version "$PHYS_PWD")"
+if [ "$PHYS_PWD" != "$PHYS_GLOBAL_ROOT" ] && [ -n "$LOCAL_VERSION" ]; then
     echo
     echo "Current project"
-    echo -e "$PWD ${BLUE}v$LOCAL_VERSION${NC} (local)"
+    echo -e "$PHYS_PWD ${BLUE}v$LOCAL_VERSION${NC}"
 fi
 echo
 echo "Available commands:"
 
-GLOBAL_COMMANDS=$(get_commands "$PHYS_GLOBAL_ROOT")
-LOCAL_COMMANDS=""
-if [ -f "$PWD/Makefile" ] && [ "$PHYS_PWD" != "$PHYS_GLOBAL_ROOT" ]; then
-    LOCAL_COMMANDS=$(get_commands "$PHYS_PWD")
-fi
+SCRIPT_MAP="$(get_script_commands "$PHYS_PWD")"
 
-for cmd in $GLOBAL_COMMANDS; do
-    case " $LOCAL_COMMANDS " in
-        *" $cmd "*)
-            ;;
-        *)
-            if [ -x "$PWD/.makefile/$cmd.sh" ] || [ -f "$PWD/.makefile/$cmd.sh" ]; then
-                echo -e "  ${GREEN}$cmd${NC} (local, overrides global)"
-            else
-                echo -e "  ${GREEN}$cmd${NC} (global)"
-            fi
-            ;;
-    esac
-done
-
-for cmd in $LOCAL_COMMANDS; do
-    case " $GLOBAL_COMMANDS " in
-        *" $cmd "*)
-            echo -e "  ${GREEN}$cmd${NC} (local, overrides global)"
-            ;;
-        *)
-            echo -e "  ${GREEN}$cmd${NC} (local)"
-            ;;
-    esac
+for cmd in $(get_commands "$PHYS_PWD"); do
+    if is_vendored "$cmd"; then
+        echo -e "  ${GREEN}${cmd}${NC} (vendored)"
+    else
+        echo -e "  ${GREEN}${cmd}${NC}"
+    fi
 done
 
 echo
