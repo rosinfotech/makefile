@@ -1,0 +1,6 @@
+Flow: Variant #1 - Direct to Main Flow (Trunk-Based Development)
+Standard: https://github.com/rosinfotech/standards#the-git-flow-standard
+Rules:
+- https://github.com/rosinfotech/standards/blob/master/standards/git-flow-standard/rule-2610082122.md
+- https://github.com/rosinfotech/standards/blob/master/standards/git-flow-standard/rule-2610092122.md
+- https://github.com/rosinfotech/standards/blob/master/standards/git-flow-standard/rule-2610092126.md

@@ -4,6 +4,26 @@
 
 # Changelog
 
+## [0.3.0] - 2026-10-13
+
+### Added
+
+- the `git_flow_*` command family implementing the five Git Flow Standard variants: task cycles, review gates, promotion, hotfixes and version seals
+- version sealing from changelog fragments: the tag on main as the version truth, atomic main+tag pushes, `.version` substitution with `path:N` selectors
+- `git_flow_clear` branch hygiene: stale, remote-only and abandoned branches with their worktrees, offered for removal (default: no)
+- `AGENTS.md` agent guide and README flow diagrams (Mermaid)
+
+### Changed
+
+- libraries renamed to the `lib_*` convention (`lib_cli`, `lib_git_flow`, `lib_version_get`, `lib_remove_dirs_safe`, `lib_ssh_client`, `lib_secrets`); command output unified on the Output CLI Standard
+- `vendor.sh` template regenerates the full git_flow target set and vendors `.rsync-exclude`
+- `skill-makefile-git-flow-ready` replaces `skill-makefile-create-commit-push`; `skill-makefile-version-update` describes the selectors and the report
+- `echo` and `version_show` follow the Output CLI Standard
+
+### Removed
+
+- the legacy `git_commit`, `git_commit_push` and `git_commit_version` commands (use `git_flow_commit_push`)
+
 ## [0.2.5] - 2026-09-26
 
 ### Changed
