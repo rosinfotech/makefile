@@ -23,7 +23,7 @@ The agent may apply two kinds of proposed changes itself - but only when the cur
 
 Non-contradiction conditions (all must hold simultaneously):
 
-- No flow declared OR variant 1 declared (under variants 2-5 the version and the changelog belong to the seal and the fragments - manual edits contradict the flow and are forbidden; the agent proposes fragment commands instead);
+- The repository is set up for git flow: the `.git_flow/.git-flow-*` marker is present and declares variant 1. Without a declared flow the repository is not ready yet - edits are forbidden and the agent recommends them as plan steps (including `make git_flow_init`); under variants 2-5 the version and the changelog belong to the seal and the fragments - manual edits contradict the flow and are forbidden (the agent proposes fragment commands instead);
 - The proposed version is a valid semver, strictly greater than the current line 1 of `.version`;
 - A section with the proposed version does not yet exist in `CHANGELOG.md`;
 - No unconsumed fragments and no unfinished seal (the status per `make git_flow_status`);
@@ -59,7 +59,7 @@ When any condition breaks, the agent only formulates instructions and the user a
 
   Possible phases and plans:
 
-  - No flow declared: suggest `make git_flow_init <1..5>` (help choose the variant), then the chosen variant's plan;
+  - No flow declared: the agent applies nothing itself; suggest `make git_flow_init <1..5>` (help choose the variant), then the chosen variant's plan; include the `.version` and `CHANGELOG.md` edits as user steps of the plan (the ready section text + setting the future version, e.g. via the skill-makefile-version-update skill);
 
   - Variant 1, changes on main: `make git_flow_commit_push "<Type>: <message>"`; answer y at the `Tag now?` prompt - the version, the tag and the push go atomically (the tag = the production release); the commit message is built from the senior proposed changelog line; when the "Actions allowed to the agent" conditions hold, the agent itself sets the future version in `.version` and adds the `CHANGELOG.md` section;
 

@@ -4,6 +4,12 @@
 
 # Changelog
 
+## [0.3.1] - 2026-10-13
+
+### Changed
+
+- the git-flow-ready skill applies version and changelog edits only under a declared variant 1 flow; without an initialized flow it recommends the edits as user steps
+
 ## [0.3.0] - 2026-10-13
 
 ### Added
