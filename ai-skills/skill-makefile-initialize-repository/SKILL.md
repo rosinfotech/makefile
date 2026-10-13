@@ -29,4 +29,4 @@ description: Initializing a repository managed by the makefile project
    - Ask the user if they want additional content (description, usage, etc.);
    - If the user confirms, supplement the file in the same language it was started in;
 
-5. Suggest the user run the commit via the `skill-makefile-create-commit-push` skill with message `Initialization`.
+5. Suggest the user run the commit via the `skill-makefile-git-flow-ready` skill with message `Initialization`.

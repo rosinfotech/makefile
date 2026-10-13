@@ -4,7 +4,7 @@
 # cleanup) plus the file/directory transfer helpers. Auth: password via
 # sshpass or an ssh key; the key takes precedence. Pure transport - no
 # server registry, no secrets schema, no logging (those live in the
-# consuming project or in secrets.sh).
+# consuming project or in lib_secrets.sh).
 #
 SSH_DEFAULT_PORT=22
 
@@ -154,7 +154,7 @@ sshClient() {
                 if [ $attempt -ge 3 ]; then
                     break
                 fi
-                echo "SSH auth failed (attempt ${attempt}/3), retrying in 3s..."
+                echo "SSH auth failed (attempt ${attempt}/3), retrying in 3s.."
                 sleep 3
             done
             cat "$err" >&2
@@ -187,7 +187,7 @@ sshClient() {
                 if [ $attempt -ge 3 ]; then
                     break
                 fi
-                echo "SSH auth failed (attempt ${attempt}/3), retrying in 3s..."
+                echo "SSH auth failed (attempt ${attempt}/3), retrying in 3s.."
                 sleep 3
             done
             cat "$err" >&2

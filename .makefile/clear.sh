@@ -3,7 +3,7 @@
 LIB_DIR="$(cd "$(dirname "$0")" && pwd)"
 
 source "$LIB_DIR/kill_processes.sh"
-source "$LIB_DIR/remove_dirs_safe.sh"
+source "$LIB_DIR/lib_remove_dirs_safe.sh"
 
 # Add any commands to remove files or directories
 

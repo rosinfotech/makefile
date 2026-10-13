@@ -8,15 +8,7 @@ GLOBAL_ROOT="${GLOBAL_ROOT:-$(dirname "$(dirname "$SELF")")}"
 PHYS_GLOBAL_ROOT="$(cd "$GLOBAL_ROOT" && pwd -P)"
 PHYS_PWD="$(cd "$PWD" && pwd -P)"
 
-if [ -t 1 ]; then
-    BLUE="\033[0;34m"
-    GREEN="\033[0;32m"
-    NC="\033[0m"
-else
-    BLUE=""
-    GREEN=""
-    NC=""
-fi
+source "$(cd "$(dirname "$SELF")" && pwd)/lib_cli.sh"
 
 get_version() {
     if [ -f "$1/.version" ]; then
@@ -78,30 +70,38 @@ is_vendored() {
 }
 
 FRAMEWORK_VERSION="$(get_version "$PHYS_GLOBAL_ROOT")"
-
-echo
-echo
-echo -e "Hello, ${BLUE}${USER:-$(whoami)}${NC}!"
-echo -e "This is rosinfo.tech makefile util ${BLUE}v$FRAMEWORK_VERSION${NC}"
-echo "See https://github.com/rosinfotech/makefile"
 LOCAL_VERSION="$(get_version "$PHYS_PWD")"
-if [ "$PHYS_PWD" != "$PHYS_GLOBAL_ROOT" ] && [ -n "$LOCAL_VERSION" ]; then
-    echo
-    echo "Current project"
-    echo -e "$PHYS_PWD ${BLUE}v$LOCAL_VERSION${NC}"
+
+cliFrameInit
+cliHeader1 "Hello, ${USER:-$(whoami)}!"
+printf -- '- util: rosinfo.tech makefile'
+if [ -n "$FRAMEWORK_VERSION" ]; then
+    printf ' v%s' "$FRAMEWORK_VERSION"
 fi
-echo
-echo "Available commands:"
+printf ';\n'
+if [ "$PHYS_PWD" != "$PHYS_GLOBAL_ROOT" ] && [ -n "$LOCAL_VERSION" ]; then
+    printf -- '- project: '
+    cliPath "$PHYS_PWD"
+    printf ' (v%s);\n' "$LOCAL_VERSION"
+fi
+printf -- '- source: '
+cliPath "https://github.com/rosinfotech/makefile"
+printf ';\n'
+printf '\n'
+
+cliHeader3 "Available commands"
 
 SCRIPT_MAP="$(get_script_commands "$PHYS_PWD")"
 
 for cmd in $(get_commands "$PHYS_PWD"); do
+    printf -- '- %s' "$cmd"
     if is_vendored "$cmd"; then
-        echo -e "  ${GREEN}${cmd}${NC} (vendored)"
-    else
-        echo -e "  ${GREEN}${cmd}${NC}"
+        if [ "$CLI_COLOR_OUT" = "1" ]; then
+            printf '%s (vendored)%s' "$CLI_GRAY" "$CLI_RESET"
+        else
+            printf ' (vendored)'
+        fi
     fi
+    printf ';\n'
 done
-
-echo
-echo
+printf '\n'

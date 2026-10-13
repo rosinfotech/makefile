@@ -72,19 +72,33 @@ block_file="$(mktemp)"
     printf '%s\n' '# and .makefile/vendor/rosinfotech/).'
     printf '\n'
     printf 'define resolve_script\n$(if $(wildcard $(CURDIR)/.makefile/$(1)),$(CURDIR)/.makefile/$(1),$(CURDIR)/.makefile/vendor/rosinfotech/$(1))\nendef\n\n'
+    printf 'export FLOW_RELEASE FLOW_YES\n\n'
     printf '.DEFAULT_GOAL := echo\n'
-    printf '.PHONY: echo init clear git_commit git_commit_push git_commit_version kill_processes setup version_show version_update\n'
-    printf '.SILENT: echo init clear git_commit git_commit_push git_commit_version kill_processes setup version_show version_update\n\n'
+    printf '.PHONY: echo init clear kill_processes setup version_show version_update git_flow_clear git_flow_commit git_flow_commit_push git_flow_prepare_release git_flow_help git_flow_init git_flow_promote git_flow_status git_flow_seal git_flow_hotfix_finish git_flow_hotfix_start git_flow_task_finish git_flow_task_fragment git_flow_task_merge_develop git_flow_task_start\n'
+    printf '.SILENT: echo init clear kill_processes setup version_show version_update git_flow_clear git_flow_commit git_flow_commit_push git_flow_prepare_release git_flow_help git_flow_init git_flow_promote git_flow_status git_flow_seal git_flow_hotfix_finish git_flow_hotfix_start git_flow_task_finish git_flow_task_fragment git_flow_task_merge_develop git_flow_task_start\n\n'
     printf 'init:\n\tchmod +x $(wildcard $(CURDIR)/.makefile/*.sh) $(wildcard $(CURDIR)/.makefile/vendor/rosinfotech/*.sh)\n\n'
     printf 'echo: init\n\tGLOBAL_ROOT="$(CURDIR)/.makefile/vendor/rosinfotech" $(call resolve_script,echo.sh)\n\n'
     printf 'clear: init\n\t$(call resolve_script,clear.sh)\n\n'
-    printf 'git_commit: init\n\t$(call resolve_script,git_commit.sh) "$(filter-out $@,$(MAKECMDGOALS))"\n\n'
-    printf 'git_commit_push: init\n\t$(call resolve_script,git_commit_push.sh) "$(filter-out $@,$(MAKECMDGOALS))"\n\n'
-    printf 'git_commit_version: init\n\t$(call resolve_script,git_commit_version.sh) "$(filter-out $@,$(MAKECMDGOALS))"\n\n'
     printf 'kill_processes: init\n\t$(call resolve_script,kill_processes.sh)\n\n'
     printf 'setup: init\n\t$(call resolve_script,setup.sh)\n\n'
     printf 'version_show: init\n\t$(call resolve_script,version_show.sh)\n\n'
     printf 'version_update: init\n\t$(call resolve_script,version_update.sh)\n\n'
+    printf 'git_flow_clear: init\n\t$(call resolve_script,git_flow_clear.sh)\n\n'
+    printf 'git_flow_commit: init\n\t$(call resolve_script,git_flow_commit.sh) "$(filter-out $@,$(MAKECMDGOALS))"\n\n'
+    printf 'git_flow_commit_push: init\n\t$(call resolve_script,git_flow_commit_push.sh) "$(filter-out $@,$(MAKECMDGOALS))"\n\n'
+    printf 'git_flow_prepare_release: init\n\t$(call resolve_script,git_flow_prepare_release.sh)\n\n'
+    printf 'git_flow_help: init\n\t$(call resolve_script,git_flow_help.sh)\n\n'
+    printf 'git_flow_init: init\n\t$(call resolve_script,git_flow_init.sh) "$(filter-out $@,$(MAKECMDGOALS))"\n\n'
+    printf 'git_flow_promote: init\n\t$(call resolve_script,git_flow_promote.sh)\n\n'
+    printf 'git_flow_status: init\n\t$(call resolve_script,git_flow_status.sh)\n\n'
+    printf 'git_flow_seal: init\n\t$(call resolve_script,git_flow_seal.sh) "$(filter-out $@,$(MAKECMDGOALS))"\n\n'
+    printf 'git_flow_hotfix_finish: init\n\t$(call resolve_script,git_flow_hotfix_finish.sh)\n\n'
+    printf 'git_flow_hotfix_start: init\n\t$(call resolve_script,git_flow_hotfix_start.sh) "$(filter-out $@,$(MAKECMDGOALS))"\n\n'
+    printf 'git_flow_task_finish: init\n\t$(call resolve_script,git_flow_task_finish.sh)\n\n'
+    printf 'git_flow_task_fragment: init\n\t$(call resolve_script,git_flow_task_fragment.sh) "$(filter-out $@,$(MAKECMDGOALS))"\n\n'
+    printf 'git_flow_task_merge_develop: init\n\t$(call resolve_script,git_flow_task_merge_develop.sh)\n\n'
+    printf 'git_flow_task_start: init\n\t$(call resolve_script,git_flow_task_start.sh) "$(filter-out $@,$(MAKECMDGOALS))"\n\n'
+    printf '%%:\n\t@:\n\n'
     printf '%s\n' "$END_MARKER"
 } > "$block_file"
 
@@ -149,6 +163,7 @@ for item in "$SRC"/*.sh; do
     cp -R "$item" "$DEST_REL/"
     count=$((count + 1))
 done
+[ -f "$SRC/.rsync-exclude" ] && cp "$SRC/.rsync-exclude" "$DEST_REL/.rsync-exclude"
 [ -f "$SRC/../.version" ] && cp "$SRC/../.version" "$DEST_REL/.version"
 find "$DEST_REL" -name "*.sh" -exec chmod +x {} +
 

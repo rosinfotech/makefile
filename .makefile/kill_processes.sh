@@ -24,7 +24,7 @@ wait_for_ports_to_be_free() {
 
     if [ "$active_processes" = true ]; then
 
-        echo "Waiting for processes to finish..."
+        echo "Waiting for processes to finish.."
 
         for port in "${PORTS[@]}"; do
             lsof -ti:$port | xargs -r kill 2>/dev/null

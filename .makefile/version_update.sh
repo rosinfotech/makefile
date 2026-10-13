@@ -1,35 +1,32 @@
 #!/bin/bash
 
+LIB_DIR="$(cd "$(dirname "$0")" && pwd)"
+
+source "$LIB_DIR/lib_git_flow.sh"
+
 VERSION_FILE="./.version"
 
+cliFrameInit
+
 if [ ! -f "$VERSION_FILE" ]; then
-    echo "Error: $VERSION_FILE not found"
+    cliError "$VERSION_FILE not found"
     exit 1
 fi
 
-current_version=$(sed -n '1p' "$VERSION_FILE")
-new_version=$(sed -n '2p' "$VERSION_FILE")
+current_version=$(sed -n '1p' "$VERSION_FILE" | tr -d '\n\r')
+new_version=$(sed -n '2p' "$VERSION_FILE" | tr -d '\n\r')
 
 if [ -z "$current_version" ] || [ -z "$new_version" ]; then
-    echo "Error: Invalid .version file format"
+    cliError "invalid .version file format"
     exit 1
 fi
 
 if [ "$current_version" = "$new_version" ]; then
-    echo "Version already up to date: $current_version"
+    cliInfo "version already up to date: $current_version"
     exit 0
 fi
 
-escaped_current=$(echo "$current_version" | sed 's/\./\\./g')
-
-sed -n '3,$p' "$VERSION_FILE" | while read -r file; do
-    if [ -f "$file" ]; then
-        sed -i '' "s/[[:<:]]$escaped_current[[:>:]]/$new_version/g" "$file"
-        echo "Updated: $file"
-    else
-        echo "Warning: File not found - $file"
-    fi
-done
+flowSubstituteVersion "$current_version" "$new_version"
 
 sed -i '' "1s/.*/$new_version/" "$VERSION_FILE"
-echo "Version updated: $current_version → $new_version"
+cliSuccess "version updated: $current_version -> $new_version"

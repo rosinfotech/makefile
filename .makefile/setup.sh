@@ -5,7 +5,7 @@ set -e
 setup() {
 
     if ! command -v sshpass &> /dev/null; then
-        echo "Installing sshpass..."
+        echo "Installing sshpass.."
         if command -v apt-get &> /dev/null; then
             sudo apt-get update
             sudo apt-get install -y sshpass
@@ -20,7 +20,7 @@ setup() {
     fi
 
     if ! command -v rsync &> /dev/null; then
-        echo "Installing rsync..."
+        echo "Installing rsync.."
         if command -v apt-get &> /dev/null; then
             sudo apt-get install -y rsync
         elif command -v yum &> /dev/null; then
@@ -34,7 +34,7 @@ setup() {
     fi
 
     if ! command -v jq &> /dev/null; then
-        echo "Installing jq..."
+        echo "Installing jq.."
         if command -v apt-get &> /dev/null; then
             sudo apt-get install -y jq
         elif command -v yum &> /dev/null; then
