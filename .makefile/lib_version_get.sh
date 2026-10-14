@@ -78,8 +78,8 @@ getVersion() {
     fi
 
     if [ "$(semverCompare "$intent" "$floor")" -lt 0 ]; then
-        cliError "the .version declaration ${intent} is below the minimum ${floor} (the patch bump of the tag ${tag})"
-        cliHint "raise line 2 of .version."
+        cliError "The .version declaration ${intent} is below the minimum ${floor} (the patch bump of the tag ${tag})"
+        cliHint "Raise line 2 of .version."
         exit 1
     fi
 

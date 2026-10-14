@@ -10,7 +10,7 @@ flowHelp() {
     local staged_steps=()
 
     if ! marker=$(flowMarkerPath); then
-        cliInfo "flow not declared"
+        cliInfo "Flow not declared"
         cliHint "make git_flow_init <number>."
     printf '\n' >&2
         exit 0

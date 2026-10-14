@@ -24,7 +24,7 @@ flowPromote() {
 
     if ! git show-ref --verify --quiet "refs/heads/$source" 2>/dev/null && \
         ! git show-ref --verify --quiet "refs/remotes/origin/$source" 2>/dev/null; then
-        cliError "branch $source does not exist"
+        cliError "Branch $source does not exist"
         exit 1
     fi
 
@@ -40,13 +40,13 @@ flowPromote() {
         exit 0
     fi
 
-    cliSuccess "promoting $source -> $FLOW_MAIN_BRANCH"
+    cliSuccess "Promoting $source -> $FLOW_MAIN_BRANCH"
     printf -- '- merge request: %s -> %s;\n' "$source" "$FLOW_MAIN_BRANCH"
     printf '\n'
     if ! flowGitHubCreatePR "$source" "$FLOW_MAIN_BRANCH"; then
         flowMergeRequestUrl "$source" "$FLOW_MAIN_BRANCH"
     fi
-    cliHint "merge the pull request (squash), then run: make git_flow_seal."
+    cliHint "Merge the pull request (squash), then run: make git_flow_seal."
     printf '\n' >&2
 
 }

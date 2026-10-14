@@ -10,7 +10,7 @@ gitCommit() {
     local current_branch
 
     if [ -z "$message" ]; then
-        cliError "the commit message is required"
+        cliError "The commit message is required"
         exit 2
     fi
 
@@ -19,17 +19,17 @@ gitCommit() {
     current_branch=$(git symbolic-ref --short HEAD 2>/dev/null)
     if [ -z "$current_branch" ]; then
         if git rev-parse --verify HEAD >/dev/null 2>&1; then
-            cliError "not on any branch (detached HEAD state)"
+            cliError "Not on any branch (detached HEAD state)"
             exit 1
         else
             current_branch=$(git config --get init.defaultBranch || echo "main")
-            cliWarning "new repository detected - will use branch '${current_branch}'"
+            cliWarning "New repository detected - will use branch '${current_branch}'"
         fi
     fi
 
     if [ "$current_branch" = "$FLOW_MAIN_BRANCH" ] && (flowDetectVariant) >/dev/null 2>&1; then
-        cliWarning "committing directly on main without a version stamp"
-        cliHint "use make git_flow_commit_push \"<Type>: <message>\" to stamp the version."
+        cliWarning "Committing directly on main without a version stamp"
+        cliHint "Use make git_flow_commit_push \"<Type>: <message>\" to stamp the version."
         printf '\n' >&2
     fi
 
@@ -38,11 +38,11 @@ gitCommit() {
     git commit -m "${message}" >/dev/null 2>&1
 
     if [ $? -ne 0 ]; then
-        cliError "failed to create commit"
+        cliError "Failed to create commit"
         exit 1
     fi
 
-    cliSuccess "committed with message: ${message}"
+    cliSuccess "Committed with message: ${message}"
 
 }
 

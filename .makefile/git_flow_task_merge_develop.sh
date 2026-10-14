@@ -22,11 +22,11 @@ flowTaskIntegrate() {
         task-[0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9]-*)
             ;;
         hotfix-[0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9]-*)
-            cliError "hotfix branches bypass develop (rule #2610082120)"
+            cliError "Hotfix branches bypass develop (rule #2610082120)"
             exit 1
             ;;
         *)
-            cliError "not on a task branch (current: ${branch:-none})"
+            cliError "Not on a task branch (current: ${branch:-none})"
             exit 1
             ;;
     esac
@@ -46,7 +46,7 @@ flowTaskIntegrate() {
     if ! git show-ref --verify --quiet "refs/heads/develop" 2>/dev/null; then
         base=$(flowRemoteBaseRef "$FLOW_MAIN_BRANCH")
         git branch develop "$base"
-        cliInfo "branch created: develop (from $base)"
+        cliInfo "Branch created: develop (from $base)"
         flowHasRemote && git push -u origin develop >/dev/null 2>&1
     fi
 
@@ -60,13 +60,13 @@ flowTaskIntegrate() {
         fi
         git -C "$worktree" merge --no-edit "$branch" >/dev/null 2>&1 || {
             git -C "$worktree" merge --abort >/dev/null 2>&1
-            cliError "conflict merging $branch into develop - resolve in $worktree"
+            cliError "Conflict merging $branch into develop - resolve in $worktree"
             cliHint "git -C $worktree merge $branch."
             printf '\n' >&2
             exit 1
         }
         git -C "$worktree" push origin develop >/dev/null 2>&1 || {
-            cliError "failed to push develop"
+            cliError "Failed to push develop"
             exit 1
         }
     else
@@ -74,20 +74,20 @@ flowTaskIntegrate() {
         git merge --no-edit "$branch" >/dev/null 2>&1 || {
             git merge --abort >/dev/null 2>&1
             git checkout "$branch" >/dev/null 2>&1
-            cliError "conflict merging $branch into develop - resolve manually"
+            cliError "Conflict merging $branch into develop - resolve manually"
             cliHint "git checkout develop && git merge $branch."
             printf '\n' >&2
             exit 1
         }
         git push origin develop >/dev/null 2>&1 || {
-            cliError "failed to push develop"
+            cliError "Failed to push develop"
             exit 1
         }
         git checkout "$branch" >/dev/null 2>&1
     fi
 
-    cliSuccess "integrated: $branch -> develop (free merge, no gate)"
-    cliHint "finish with: make git_flow_task_finish."
+    cliSuccess "Integrated: $branch -> develop (free merge, no gate)"
+    cliHint "Finish with: make git_flow_task_finish."
     printf '\n' >&2
 
 }

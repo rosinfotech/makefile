@@ -17,16 +17,16 @@ current_version=$(sed -n '1p' "$VERSION_FILE" | tr -d '\n\r')
 new_version=$(sed -n '2p' "$VERSION_FILE" | tr -d '\n\r')
 
 if [ -z "$current_version" ] || [ -z "$new_version" ]; then
-    cliError "invalid .version file format"
+    cliError "Invalid .version file format"
     exit 1
 fi
 
 if [ "$current_version" = "$new_version" ]; then
-    cliInfo "version already up to date: $current_version"
+    cliInfo "Version already up to date: $current_version"
     exit 0
 fi
 
 flowSubstituteVersion "$current_version" "$new_version"
 
 sed -i '' "1s/.*/$new_version/" "$VERSION_FILE"
-cliSuccess "version updated: $current_version -> $new_version"
+cliSuccess "Version updated: $current_version -> $new_version"

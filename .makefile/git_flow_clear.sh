@@ -34,21 +34,21 @@ flowClearRemove() { # branch -> removes the worktree, the local and the remote c
             || git worktree remove --force "$worktree" >/dev/null 2>&1; then
             printf -- '- removed worktree: %s;\n' "$worktree"
         else
-            cliWarning "failed to remove the worktree $worktree"
+            cliWarning "Failed to remove the worktree $worktree"
         fi
     fi
     if git show-ref --verify --quiet "refs/heads/$branch" 2>/dev/null; then
         if git branch -D "$branch" >/dev/null 2>&1; then
             printf -- '- removed local: %s;\n' "$branch"
         else
-            cliWarning "failed to remove the local branch $branch"
+            cliWarning "Failed to remove the local branch $branch"
         fi
     fi
     if git show-ref --verify --quiet "refs/remotes/origin/$branch" 2>/dev/null; then
         if git push origin --delete "$branch" >/dev/null 2>&1; then
             printf -- '- removed remote: origin/%s;\n' "$branch"
         else
-            cliWarning "failed to remove origin/$branch"
+            cliWarning "Failed to remove origin/$branch"
         fi
     fi
 }
@@ -163,9 +163,9 @@ flowClear() {
                     removed_total=$((removed_total + 1))
                 done
                 printf '\n'
-                cliSuccess "merged branches cleaned: $removed_total"
+                cliSuccess "Merged branches cleaned: $removed_total"
             else
-                cliInfo "declined - the branches stay"
+                cliInfo "Declined - the branches stay"
             fi
         fi
     fi
@@ -233,9 +233,9 @@ flowClear() {
                     removed_total=$((removed_total + 1))
                 done
                 printf '\n'
-                cliSuccess "flow branches cleaned (total removals: $removed_total)"
+                cliSuccess "Flow branches cleaned (total removals: $removed_total)"
             else
-                cliInfo "declined - the flow branches stay"
+                cliInfo "Declined - the flow branches stay"
             fi
         fi
     fi
@@ -243,7 +243,7 @@ flowClear() {
     if [ "$removed_total" -eq 0 ] && [ "${#merged_local[@]}" -eq 0 ] \
         && [ "${#merged_remote[@]}" -eq 0 ] && [ "${#unused_local[@]}" -eq 0 ] \
         && [ "${#unused_remote[@]}" -eq 0 ]; then
-        cliSuccess "nothing to clean - no stale branches"
+        cliSuccess "Nothing to clean - no stale branches"
     fi
 
 }

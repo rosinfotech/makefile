@@ -26,18 +26,18 @@ flowAssemble() {
     if [ "$branch" != "$target" ]; then
         main_worktree=$(flowMainWorktree)
         if [ -n "$(git -C "$main_worktree" status --porcelain)" ]; then
-            cliError "the repository worktree is dirty - commit or stash before assembling"
+            cliError "The repository worktree is dirty - commit or stash before assembling"
             cliHint "git -C $main_worktree status."
             exit 1
         fi
         git -C "$main_worktree" checkout "$target" >/dev/null 2>&1 || {
             if git show-ref --verify --quiet "refs/remotes/origin/$target" 2>/dev/null; then
                 git -C "$main_worktree" checkout -b "$target" "origin/$target" >/dev/null 2>&1 || {
-                    cliError "failed to switch the repository worktree to $target"
+                    cliError "Failed to switch the repository worktree to $target"
                     exit 1
                 }
             else
-                cliError "failed to switch the repository worktree to $target"
+                cliError "Failed to switch the repository worktree to $target"
                 exit 1
             fi
         }
@@ -46,7 +46,7 @@ flowAssemble() {
             git -C "$main_worktree" merge --ff-only "origin/$target" >/dev/null 2>&1 || true
         fi
         cd "$main_worktree"
-        cliInfo "switched the repository worktree to $target"
+        cliInfo "Switched the repository worktree to $target"
         branch="$target"
     fi
 
@@ -68,7 +68,7 @@ flowAssemble() {
     fi
 
     if [ -z "$(flowFragmentList)" ]; then
-        cliError "no changelog fragments in $FLOW_FRAGMENTS_DIR/ - nothing to assemble"
+        cliError "No changelog fragments in $FLOW_FRAGMENTS_DIR/ - nothing to assemble"
         exit 1
     fi
 
@@ -82,19 +82,19 @@ flowAssemble() {
 
     if [ "$variant" -eq 5 ] && [ -n "$old" ] && isSemver "$old" &&         [ "$(semverCompare "$next" "$old")" -le 0 ]; then
         bumped="release/$(flowBumpMinorBase "$old")"
-        cliWarning "the train $branch already shipped ($next <= tag $old) - bumping to $bumped"
+        cliWarning "The train $branch already shipped ($next <= tag $old) - bumping to $bumped"
         git branch -m "$bumped"
         if git show-ref --verify --quiet "refs/remotes/origin/$branch" 2>/dev/null; then
             git push -u origin "$bumped" >/dev/null 2>&1
             git push origin --delete "$branch" >/dev/null 2>&1
         fi
-        cliInfo "train bumped: $bumped (entering main stamps ${bumped#release/}.0)"
+        cliInfo "Train bumped: $bumped (entering main stamps ${bumped#release/}.0)"
         branch="$bumped"
         next="${bumped#release/}.0"
     fi
 
     if [ -n "$old" ] && [ "$old" = "$next" ]; then
-        cliError "the assembled version $next equals the last tag - nothing new to assemble"
+        cliError "The assembled version $next equals the last tag - nothing new to assemble"
         exit 1
     fi
 
@@ -102,7 +102,7 @@ flowAssemble() {
 
     if [ -z "$FLOW_SECTION_MSG" ]; then
         rm -f "$FLOW_SECTION_FILE"
-        cliError "the fragments are empty"
+        cliError "The fragments are empty"
         exit 1
     fi
 
@@ -118,21 +118,21 @@ flowAssemble() {
 
     git add .
     git commit -m "$next: $FLOW_SECTION_TYPE: $FLOW_SECTION_MSG" >/dev/null 2>&1 || {
-        cliError "failed to create the assembly commit"
+        cliError "Failed to create the assembly commit"
         exit 1
     }
 
     git push origin "$branch" >/dev/null 2>&1 || {
-        cliError "failed to push $branch"
+        cliError "Failed to push $branch"
         exit 1
     }
 
-    cliSuccess "assembled $next on $branch (fragments consumed, CHANGELOG section written)"
+    cliSuccess "Assembled $next on $branch (fragments consumed, CHANGELOG section written)"
     printf -- '- promotion merge request: %s -> %s;\n' "$branch" "$FLOW_MAIN_BRANCH"
     printf -- '- merge request title: %s: %s;\n' "$FLOW_SECTION_TYPE" "$FLOW_SECTION_MSG"
     flowMergeRequestUrl "$branch" "$FLOW_MAIN_BRANCH"
-    cliHint "enable squash in the merge request (the title carries no version - the tag is the truth)."
-    cliHint "after it merges: make git_flow_seal (it switches to $FLOW_MAIN_BRANCH itself)."
+    cliHint "Enable squash in the merge request (the title carries no version - the tag is the truth)."
+    cliHint "After it merges: make git_flow_seal (it switches to $FLOW_MAIN_BRANCH itself)."
 
 }
 

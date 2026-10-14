@@ -11,7 +11,7 @@ flowInit() {
     local existing same=0 base train version
 
     if [ -z "$variant" ]; then
-        cliError "the variant number is required"
+        cliError "The variant number is required"
         cliHeader3Err "Variants (the Git Flow Standard ladder)"
         flowStandardCatalog | sort -n | while IFS="$(printf '\t')" read -r row_number row_name row_asset; do
             printf '%s  %s\n' "$row_number" "$row_name" >&2
@@ -22,7 +22,7 @@ flowInit() {
     fi
 
     echo "$variant" | grep -qE '^[0-9]+$' || {
-        cliError "the variant must be a number - got '${variant}'"
+        cliError "The variant must be a number - got '${variant}'"
         exit 2
     }
 
@@ -31,7 +31,7 @@ flowInit() {
     catalog=$(flowStandardCatalog) || exit 1
     line=$(printf '%s\n' "$catalog" | awk -F '\t' -v n="$variant" '$1 == n')
     if [ -z "$line" ]; then
-        cliError "variant #${variant} not found in the standard"
+        cliError "Variant #${variant} not found in the standard"
         exit 2
     fi
     name=$(printf '%s\n' "$line" | cut -f2)
@@ -42,7 +42,7 @@ flowInit() {
 
     if [ -f "$FLOW_DIR/flow" ]; then
         mv "$FLOW_DIR/flow" "$FLOW_DIR/$asset"
-        cliInfo "migrated the generic flow file into the asset-named $FLOW_DIR/$asset"
+        cliInfo "Migrated the generic flow file into the asset-named $FLOW_DIR/$asset"
     fi
 
     for existing in "$FLOW_DIR"/"$FLOW_MARKER_PREFIX"*; do
@@ -53,11 +53,11 @@ flowInit() {
                 same=1
             else
                 rm -f "$existing"
-                cliWarning "replaced the flow file - a migration rides this change in one commit"
+                cliWarning "Replaced the flow file - a migration rides this change in one commit"
             fi
         else
             rm -f "$existing"
-            cliWarning "removed the old flow file $existing - a migration rides this change in one commit"
+            cliWarning "Removed the old flow file $existing - a migration rides this change in one commit"
         fi
     done
 
@@ -68,7 +68,7 @@ flowInit() {
         else
             rm -f "$existing"
         fi
-        cliInfo "migrated the legacy root marker away: $existing"
+        cliInfo "Migrated the legacy root marker away: $existing"
     done
 
     if [ -d "changelog-fragments" ]; then
@@ -78,17 +78,17 @@ flowInit() {
             mv "$fragment" "$FLOW_FRAGMENTS_DIR/"
         done
         rmdir changelog-fragments 2>/dev/null
-        cliInfo "migrated legacy changelog-fragments/ into $FLOW_FRAGMENTS_DIR/"
+        cliInfo "Migrated legacy changelog-fragments/ into $FLOW_FRAGMENTS_DIR/"
     fi
 
     if [ "$same" -eq 1 ]; then
-        cliInfo "flow already declared: $name ($FLOW_DIR/$asset)"
+        cliInfo "Flow already declared: $name ($FLOW_DIR/$asset)"
     elif [ -f ".makefile/flow-markers/$asset" ]; then
         cp ".makefile/flow-markers/$asset" "$FLOW_DIR/$asset"
-        cliSuccess "flow file written: $FLOW_DIR/$asset (local override)"
+        cliSuccess "Flow file written: $FLOW_DIR/$asset (local override)"
     else
         flowFetchMarkerAsset "$asset" "$FLOW_DIR/$asset" || exit 1
-        cliSuccess "flow file written: $FLOW_DIR/$asset (fetched from the standard)"
+        cliSuccess "Flow file written: $FLOW_DIR/$asset (fetched from the standard)"
     fi
 
     if [ ! -f CHANGELOG.md ]; then
@@ -104,12 +104,12 @@ flowInit() {
     git add "$FLOW_DIR" CHANGELOG.md 2>/dev/null
     if ! git diff --cached --quiet 2>/dev/null; then
         git commit -m "Changed: Flow variant #${variant} - ${name} declared" >/dev/null 2>&1 && {
-            cliInfo "marker committed - the branch skeleton forks from the migrated main"
+            cliInfo "Marker committed - the branch skeleton forks from the migrated main"
             if flowHasRemote; then
                 if git push origin "$FLOW_MAIN_BRANCH" >/dev/null 2>&1; then
-                    cliInfo "marker commit pushed to origin"
+                    cliInfo "Marker commit pushed to origin"
                 else
-                    cliWarning "failed to push the marker commit - push main before platform merges"
+                    cliWarning "Failed to push the marker commit - push main before platform merges"
                 fi
             fi
         }
@@ -141,7 +141,7 @@ flowInit() {
                 train="release/0.1"
             fi
             flowEnsureBranch "$train" "$base"
-            cliInfo "train created: $train (entering main stamps ${train#release/}.0)"
+            cliInfo "Train created: $train (entering main stamps ${train#release/}.0)"
         else
             flowRefreshGateFromMain "$train"
         fi

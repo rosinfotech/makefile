@@ -22,11 +22,11 @@ gitCommitPush() {
     current_branch=$(git symbolic-ref --short HEAD 2>/dev/null)
     if [ -z "$current_branch" ]; then
         if git rev-parse --verify HEAD >/dev/null 2>&1; then
-            cliError "not on any branch (detached HEAD state)"
+            cliError "Not on any branch (detached HEAD state)"
             exit 1
         else
             current_branch=$(git config --get init.defaultBranch || echo "main")
-            cliWarning "new repository detected - will use branch '${current_branch}'"
+            cliWarning "New repository detected - will use branch '${current_branch}'"
         fi
     fi
 
@@ -45,31 +45,31 @@ gitCommitPush() {
 
     if (flowDetectVariant) >/dev/null 2>&1 && ! flowReleaseGate; then
         if [ -z "$message" ]; then
-            cliError "the commit message is required when the tagging is deferred"
+            cliError "The commit message is required when the tagging is deferred"
             exit 2
         fi
         git add .
         git commit -m "${message}" >/dev/null 2>&1 || {
-            cliError "failed to create commit"
+            cliError "Failed to create commit"
             exit 1
         }
         if git rev-parse --verify "${remote_name}/${current_branch}" >/dev/null 2>&1; then
             git push "${remote_name}" "${current_branch}" >/dev/null 2>&1 || {
-                cliError "failed to push ${current_branch}"
+                cliError "Failed to push ${current_branch}"
                 exit 1
             }
         elif git remote | grep -q .; then
             git push --set-upstream "${remote_name}" "${current_branch}" >/dev/null 2>&1 || {
-                cliError "failed to push ${current_branch}"
+                cliError "Failed to push ${current_branch}"
                 exit 1
             }
         else
-            cliWarning "no remote configured - the deferred commit stays local"
-            cliSuccess "tagging deferred - the commit carries no version or tag"
+            cliWarning "No remote configured - the deferred commit stays local"
+            cliSuccess "Tagging deferred - the commit carries no version or tag"
             exit 0
         fi
-        cliInfo "tagging deferred - the commit carries no version or tag"
-        cliHint "the next tagged stamp versions the accumulated work."
+        cliInfo "Tagging deferred - the commit carries no version or tag"
+        cliHint "The next tagged stamp versions the accumulated work."
         printf '\n' >&2
         exit 0
     fi
@@ -101,13 +101,13 @@ gitCommitPush() {
         fi
 
         if [ $? -ne 0 ]; then
-            cliError "failed to create commit"
+            cliError "Failed to create commit"
             exit 1
         fi
 
         if [ "$attempt" -eq 1 ]; then
             if git rev-parse "${version}" >/dev/null 2>&1; then
-                cliError "tag ${version} already exists"
+                cliError "Tag ${version} already exists"
                 exit 1
             fi
         else
@@ -115,7 +115,7 @@ gitCommitPush() {
         fi
 
         git tag "${version}" >/dev/null 2>&1 || {
-            cliError "failed to create tag ${version}"
+            cliError "Failed to create tag ${version}"
             exit 1
         }
 
@@ -127,12 +127,12 @@ gitCommitPush() {
         fi
 
         if [ $? -eq 0 ]; then
-            cliSuccess "committed, pushed, and tagged with version ${version}"
+            cliSuccess "Committed, pushed, and tagged with version ${version}"
             exit 0
         fi
 
         if ! git remote | grep -q .; then
-            cliWarning "no remote configured - the commit and the tag ${version} stay local"
+            cliWarning "No remote configured - the commit and the tag ${version} stay local"
             exit 0
         fi
 
@@ -140,18 +140,18 @@ gitCommitPush() {
 
         if git ls-remote "${remote_name}" "refs/tags/${version}" 2>/dev/null | grep -q .; then
             if [ "$attempt" -ge 3 ]; then
-                cliError "failed to push commit and tag ${version}"
+                cliError "Failed to push commit and tag ${version}"
                 printf '%s\n' "$push_output" | sed 's/^/    /' >&2
                 exit 1
             fi
             recompute=$(bumpPatchVersion "${version}")
-            cliWarning "tag ${version} was taken concurrently - re-stamping as ${recompute}"
+            cliWarning "Tag ${version} was taken concurrently - re-stamping as ${recompute}"
             git tag -d "${version}" >/dev/null 2>&1
             old_version="${version}"
             version="${recompute}"
         else
             git tag -d "${version}" >/dev/null 2>&1
-            cliError "failed to push ${current_branch} and the tag ${version}"
+            cliError "Failed to push ${current_branch} and the tag ${version}"
             printf '%s\n' "$push_output" | sed 's/^/    /' >&2
             exit 1
         fi

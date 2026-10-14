@@ -23,11 +23,11 @@ flowHotfixFinish() {
         hotfix-[0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9]-*)
             ;;
         task-[0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9]-*)
-            cliError "a task branch finishes with make git_flow_task_finish"
+            cliError "A task branch finishes with make git_flow_task_finish"
             exit 1
             ;;
         *)
-            cliError "not on a hotfix branch (current: ${branch:-none})"
+            cliError "Not on a hotfix branch (current: ${branch:-none})"
             exit 1
             ;;
     esac
@@ -35,7 +35,7 @@ flowHotfixFinish() {
     flowRequireCleanTree || exit 1
 
     flowSeniorFragment "$(flowTaskLabelFromBranch "$branch")" >/dev/null || {
-        cliError "the hotfix carries no changelog fragment - add one before finishing"
+        cliError "The hotfix carries no changelog fragment - add one before finishing"
         cliHint "make git_flow_task_fragment \"Fixed: one English line\"."
         printf '\n' >&2
         exit 1
@@ -46,8 +46,8 @@ flowHotfixFinish() {
     fi
 
     if flowBranchPatchesIn "$branch" "$FLOW_MAIN_BRANCH"; then
-        cliError "the hotfix is already in $FLOW_MAIN_BRANCH - nothing to finish"
-        cliHint "run make git_flow_seal on $FLOW_MAIN_BRANCH after the merge."
+        cliError "The hotfix is already in $FLOW_MAIN_BRANCH - nothing to finish"
+        cliHint "Run make git_flow_seal on $FLOW_MAIN_BRANCH after the merge."
         printf '\n' >&2
         exit 1
     fi
@@ -55,24 +55,24 @@ flowHotfixFinish() {
     if flowHasRemote && git show-ref --verify --quiet "refs/remotes/origin/$branch" 2>/dev/null && \
         [ "$(git rev-parse "$branch" 2>/dev/null)" = "$(git rev-parse "origin/$branch" 2>/dev/null)" ]; then
         cliError "$branch is already pushed - the merge request already exists"
-        cliHint "merge the open request in the repository UI, then run make git_flow_seal."
+        cliHint "Merge the open request in the repository UI, then run make git_flow_seal."
         printf '\n' >&2
         exit 1
     fi
 
     git push -u origin "$branch" >/dev/null 2>&1 || {
-        cliError "failed to push $branch"
+        cliError "Failed to push $branch"
         exit 1
     }
 
-    cliSuccess "pushed: $branch"
+    cliSuccess "Pushed: $branch"
     printf -- '- merge request: %s -> %s (bypasses the queue);\n' "$branch" "$FLOW_MAIN_BRANCH"
     printf '\n'
     if ! flowGitHubCreatePR "$branch" "$FLOW_MAIN_BRANCH"; then
         flowMergeRequestUrl "$branch" "$FLOW_MAIN_BRANCH"
     fi
-    cliHint "enable squash in the merge request (the title carries no version - the hotfix stamp follows)."
-    cliHint "after the merge: make git_flow_seal (it switches to main and back-merges everywhere)."
+    cliHint "Enable squash in the merge request (the title carries no version - the hotfix stamp follows)."
+    cliHint "After the merge: make git_flow_seal (it switches to main and back-merges everywhere)."
     printf '\n' >&2
 
 }

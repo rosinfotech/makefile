@@ -4,6 +4,13 @@
 
 # Changelog
 
+## [0.3.2] - 2026-10-13
+
+### Changed
+
+- message texts start with a capital letter when not led by a command or a path (187 messages across the command family)
+- the test logs directory (`.flow_test_logs/`) ignored
+
 ## [0.3.1] - 2026-10-13
 
 ### Changed

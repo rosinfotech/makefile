@@ -21,7 +21,7 @@ flowStatus() {
     flowRequireGitRepo
 
     if ! marker=$(flowMarkerPath); then
-        cliInfo "flow not declared"
+        cliInfo "Flow not declared"
         cliHint "Run: make git_flow_init <number>."
     printf '\n' >&2
         exit 0
@@ -29,7 +29,7 @@ flowStatus() {
 
     info=$(flowMarkerInfo "$marker")
     if [ -z "$info" ]; then
-        cliError "malformed flow file $marker (no 'Flow: Variant #N' line)"
+        cliError "Malformed flow file $marker (no 'Flow: Variant #N' line)"
         exit 1
     fi
     variant="${info%%|*}"

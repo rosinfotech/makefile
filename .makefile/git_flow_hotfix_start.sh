@@ -19,7 +19,7 @@ flowHotfixStart() {
     flowRequireVariant "$variant" "4 5" "$reason"
 
     if [ -z "$label" ]; then
-        cliError "the hotfix label is required"
+        cliError "The hotfix label is required"
         cliHint "make git_flow_hotfix_start <label>."
     printf '\n' >&2
         exit 2
@@ -28,7 +28,7 @@ flowHotfixStart() {
     label=$(echo "$label" | tr '[:upper:]' '[:lower:]' | sed 's/[^a-z0-9-]/-/g; s/^-*//; s/-*$//')
 
     if [ -z "$label" ]; then
-        cliError "the label must contain letters or digits"
+        cliError "The label must contain letters or digits"
         exit 2
     fi
 
@@ -43,21 +43,21 @@ flowHotfixStart() {
     worktree="../$(basename "$PWD")-${branch}"
 
     if git show-ref --verify --quiet "refs/heads/$branch" 2>/dev/null; then
-        cliError "branch $branch already exists"
+        cliError "Branch $branch already exists"
         exit 1
     fi
 
     if [ -e "$worktree" ]; then
-        cliError "worktree path already exists: $worktree"
+        cliError "Worktree path already exists: $worktree"
         exit 1
     fi
 
     git worktree add -b "$branch" "$worktree" "$base_ref" >/dev/null 2>&1 || {
-        cliError "failed to create the worktree $worktree"
+        cliError "Failed to create the worktree $worktree"
         exit 1
     }
 
-    cliSuccess "hotfix branch $branch created (fork: $base_ref, bypasses the queue)"
+    cliSuccess "Hotfix branch $branch created (fork: $base_ref, bypasses the queue)"
     printf -- '- worktree: %s;\n' "$worktree"
     printf '\n'
     cliHeader3 "Next steps (rule #2610082120)"
