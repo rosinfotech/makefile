@@ -4,6 +4,16 @@
 
 # Changelog
 
+## [0.3.3] - 2026-10-17
+
+### Added
+
+- `secretsBackup`: a rotating backup helper in `lib_secrets.sh` - keeps the `SECRETS_BACKUP_KEEP` newest timestamped copies next to the secrets file
+
+### Changed
+
+- `vendor` no longer leaves `Makefile.bak.<timestamp>` copies in the project - the rollback on validation failure now uses a temporary file
+
 ## [0.3.2] - 2026-10-13
 
 ### Changed

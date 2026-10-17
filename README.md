@@ -33,8 +33,8 @@ What it does:
   directory, replaced wholesale on every run; a README manifest inside
   records the source commit SHA and update instructions);
 - prepends standalone definitions to the project Makefile on the first run
-  (marker-guarded; the original is backed up as `Makefile.bak.<timestamp>`;
-  repeated runs only refresh the vendor directory);
+  (marker-guarded; repeated runs refresh the vendor directory and upgrade
+  the vendored block when the framework template changes);
 - when the target has no Makefile, scaffolds a minimal project
   (`.version`, `CHANGELOG.md`, `README.md`, `.editorconfig`) - this
   scaffolds the project files when the target has no Makefile;

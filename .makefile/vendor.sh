@@ -6,10 +6,9 @@
 #   .makefile/vendor/rosinfotech/   framework scripts + README manifest
 #                                   (source repo, commit SHA, update hints)
 #   Makefile                        standalone block prepended on the first
-#                                   run (marker-guarded, backed up); on
-#                                   later runs the block is upgraded to the
-#                                   current template when it differs (update
-#                                   mode, backed up)
+#                                   run (marker-guarded); on later runs the
+#                                   block is upgraded to the current
+#                                   template when it differs (update mode)
 #
 # When <path> has no Makefile a minimal project is scaffolded (Makefile
 # with the standalone block, .version, CHANGELOG.md, README.md,
@@ -65,6 +64,8 @@ fi
 
 END_MARKER="# --- end vendored makefile framework ---"
 block_file="$(mktemp)"
+original_file="$(mktemp)"
+had_original=0
 {
     printf '%s\n' "$MARKER"
     printf '%s\n' '# Standalone definitions: this Makefile does not require the globally'
@@ -112,30 +113,32 @@ elif grep -qF "$MARKER" Makefile; then
     elif [ "$(sed -n "${start_line},${end_line}p" Makefile)" = "$(cat "$block_file")" ]; then
         echo "Makefile already vendored - refreshing ${DEST_REL}/ only"
     else
-        backup="Makefile.bak.$(date +%Y_%m_%d_%H%M%S)"
-        cp Makefile "$backup"
+        cp Makefile "$original_file"
+        had_original=1
         {
             sed -n "1,$((start_line - 1))p" Makefile
             cat "$block_file"
             sed -n "$((end_line + 1)),\$p" Makefile
         } > Makefile.new
         mv Makefile.new Makefile
-        echo "Makefile: vendored block upgraded to the current template (backup: ${backup#./})"
+        echo "Makefile: vendored block upgraded to the current template"
     fi
 else
-    backup="Makefile.bak.$(date +%Y_%m_%d_%H%M%S)"
-    cp Makefile "$backup"
+    cp Makefile "$original_file"
+    had_original=1
 fi
 
 if [ "$scaffold" -eq 1 ] || ! grep -qF "$MARKER" Makefile 2>/dev/null; then
     {
         cat "$block_file"
         printf '\n'
-        [ "$scaffold" -eq 0 ] && cat "$backup"
+        if [ "$scaffold" -eq 0 ]; then
+            cat "$original_file"
+        fi
     } > Makefile.new
     mv Makefile.new Makefile
     if [ "$scaffold" -eq 0 ]; then
-        echo "Makefile: standalone definitions prepended (backup: ${backup#./})"
+        echo "Makefile: standalone definitions prepended"
     else
         echo "Makefile: created with the standalone definitions"
     fi
@@ -193,13 +196,15 @@ MAKE_BIN="$(command -v make)"
 if "$MAKE_BIN" -n -C "$TARGET" init > /dev/null 2>&1; then
     echo "Validation ok: standalone make parses the Makefile (init)"
 else
-    if [ -n "${backup:-}" ] && [ -f "$backup" ]; then
-        cp "$backup" Makefile
-        echo "Error: validation failed - the Makefile was restored from the backup" >&2
+    if [ "$had_original" -eq 1 ]; then
+        cp "$original_file" Makefile
+        echo "Error: validation failed - the Makefile was restored" >&2
     fi
+    rm -f "$original_file"
     rm -rf "$DEST_REL"
     echo "Error: validation failed - the vendor directory was removed" >&2
     exit 1
 fi
+rm -f "$original_file"
 
 echo "Done: the project is independent from the linked makefile"

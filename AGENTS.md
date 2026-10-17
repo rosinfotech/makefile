@@ -54,7 +54,7 @@ Run every command from the project root through make: `make <target>`.
 - `make setup` — installs system prerequisites (sshpass, rsync);
 - `make vendor [path]` — makes the target project independent: refreshes
   `.makefile/vendor/rosinfotech/` wholesale and upgrades the standalone
-  Makefile block (marker-guarded, backed up). Only runs from a clone of this
+  Makefile block (marker-guarded). Only runs from a clone of this
   repository;
 - `make version_show` — the version truth: latest tag, `.version` lines,
   the resolved next stamp;
