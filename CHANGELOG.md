@@ -4,6 +4,12 @@
 
 # Changelog
 
+## [0.3.4] - 2026-10-19
+
+### Added
+
+- the git-flow-ready skill assesses ADR and runbook necessity during commit preparation (`docs/adr/[lang_code]/*`, `docs/runbooks/[lang_code]/*`)
+
 ## [0.3.3] - 2026-10-17
 
 ### Added

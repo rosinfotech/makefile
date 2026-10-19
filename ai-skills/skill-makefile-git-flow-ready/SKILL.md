@@ -85,4 +85,25 @@ When any condition breaks, the agent only formulates instructions and the user a
 
 5. Before finishing the plan, offer to reflect the changes in README.md when it has not changed since the last commit (updated in its original language, riding the same task commits); the README edits are made by the user - or by the agent, but only on a separate explicit user request, outside this skill;
 
-6. Finale: hand the plan to the user as a single summary - from the current state to the tag on main. The user runs the commands personally.
+6. ADR and runbook assessment - based on the change analysis (step 2), judge their necessity:
+
+  - An ADR (`docs/adr/[lang_code]/*`) - the change embodies an architectural decision:
+    - a new dependency or a technology choice;
+    - a shift of service boundaries or the data model;
+    - a rejected alternative worth recording;
+  - A runbook (`docs/runbooks/[lang_code]/*`) - the change introduces or alters an operational procedure:
+    - deployment, migration, rollback;
+    - incident recovery;
+  - The degree of necessity is determined as follows:
+    - at the agent's discretion - propose the document with a one-line justification;
+    - by a direct user instruction - the document is drafted unconditionally;
+  - When warranted, formulate the document text and include its creation as a plan step:
+    - follow the naming, numbering and format of the existing documents of the target directory;
+    - the language matches the existing documents of the target directory;
+    - an empty or absent directory - the language of the project README;
+    - the document rides the same task commits;
+  - The file edits follow the README rule of step 5: applied by the user, or by the agent;
+  - A direct user instruction for the document is an explicit request for the agent;
+  - When not warranted, state briefly in the finale that no ADR or runbook is needed;
+
+7. Finale: hand the plan to the user as a single summary - from the current state to the tag on main. The user runs the commands personally.
