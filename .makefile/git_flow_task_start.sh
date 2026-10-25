@@ -77,4 +77,5 @@ flowTaskStart() {
 }
 
 cliFrameInit
-flowTaskStart "$@"
+cliParseArgs "$@"
+flowTaskStart "${CLI_ARG_POSITIONAL:-}"

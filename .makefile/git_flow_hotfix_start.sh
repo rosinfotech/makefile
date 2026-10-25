@@ -70,4 +70,5 @@ flowHotfixStart() {
 }
 
 cliFrameInit
-flowHotfixStart "$@"
+cliParseArgs "$@"
+flowHotfixStart "${CLI_ARG_POSITIONAL:-}"

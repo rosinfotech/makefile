@@ -72,7 +72,7 @@ flowStatus() {
         for branch in $(flowFragmentList); do
             printf -- '- %s;\n' "$branch"
         done
-        cliHint "Make git_flow_seal with FLOW_RELEASE=1 tags them (the default defers)."
+        cliHint 'Make git_flow_seal with args="--release" tags them (the default defers).'
         printf '\n' >&2
     fi
 
@@ -125,7 +125,6 @@ flowStatus() {
             printf -- '- git_flow_task_merge_develop: enabled (free merge into develop);\n'
             printf -- '- git_flow_task_finish: enabled (MR into staging);\n'
             printf -- '- git_flow_hotfix_start: enabled (fork: main, bypasses the queue);\n'
-            printf -- '- git_flow_prepare_release: removed (the seal handles everything);\n'
             printf -- '- git_flow_seal: enabled (after the promotion / hotfix merge);\n'
             ;;
         5)
@@ -134,7 +133,6 @@ flowStatus() {
             printf -- '- git_flow_task_merge_develop: enabled (free merge into develop);\n'
             printf -- '- git_flow_task_finish: enabled (MR into release/x.y);\n'
             printf -- '- git_flow_hotfix_start: enabled (fork: main, bypasses the queue);\n'
-            printf -- '- git_flow_prepare_release: removed (the seal handles everything);\n'
             printf -- '- git_flow_seal: enabled (after the release / hotfix merge);\n'
             ;;
         *)

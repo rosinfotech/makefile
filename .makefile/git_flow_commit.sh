@@ -47,4 +47,5 @@ gitCommit() {
 }
 
 cliFrameInit
-gitCommit "$@"
+cliParseArgs "$@"
+gitCommit "${CLI_ARG_POSITIONAL:-}"

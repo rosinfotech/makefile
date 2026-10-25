@@ -13,8 +13,10 @@ flowStamp() {
 
     if [ "$variant" = "1" ]; then
         cliWarning "Direct to Main Flow: the commit is the seal - redirecting to make git_flow_commit_push"
-        FLOW_REDIRECTED=1 exec "$LIB_DIR/git_flow_commit_push.sh" "$@"
+        exec "$LIB_DIR/git_flow_commit_push.sh" "$@" --redirected
     fi
+
+    cliParseArgs "$@"
 
     branch=$(flowCurrentBranch)
     if [ "$branch" != "$FLOW_MAIN_BRANCH" ]; then
@@ -49,7 +51,7 @@ flowStamp() {
         mode="assemble"
         if ! flowReleaseGate; then
             cliInfo "Stamp deferred - the fragments accumulate into the next version"
-            cliHint "Answer y at the gate or set FLOW_RELEASE=1 to tag."
+            cliHint 'Answer y at the gate or rerun with args="--release" to tag.'
             printf '\n' >&2
             exit 0
         fi
@@ -99,13 +101,6 @@ flowStamp() {
     fi
 
     if [ -z "$variant_sync" ]; then
-
-    if [ "$mode" = "preassembled" ] && ! flowReleaseGate; then
-        cliInfo "Tagging deferred - the promotion stays untagged"
-        cliHint "Rerun make git_flow_seal and answer y to tag."
-        printf '\n' >&2
-        exit 0
-    fi
 
     attempt=0
     while :; do

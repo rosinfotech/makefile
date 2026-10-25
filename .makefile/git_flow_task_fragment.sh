@@ -72,4 +72,5 @@ hotfix-[0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9]-*)
 }
 
 cliFrameInit
-flowTaskFragment "$@"
+cliParseArgs "$@"
+flowTaskFragment "${CLI_ARG_POSITIONAL:-}"

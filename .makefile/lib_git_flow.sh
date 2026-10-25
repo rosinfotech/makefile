@@ -395,7 +395,7 @@ $(flowVersionTargets)
 TARGETS
 }
 
-flowConfirm() { # question -> 0 yes, 1 no; FLOW_YES (agents, pipelines) or a non-TTY stream bypasses
+flowConfirm() { # question -> 0 yes, 1 no; --yes/-y (agents, pipelines) or a non-TTY stream bypasses
     local answer
     case "${FLOW_YES:-}" in
         ''|0|[nN][oO]|[fF][aA][lL][sS][eE]) ;;
@@ -459,7 +459,7 @@ flowVersionPrompt() { # computed_version -> echoes the version to use (may be ov
     esac
 }
 
-flowReleaseGate() { # -> 0 tag now, 1 defer; FLOW_RELEASE forces; the default (incl. a non-TTY stream) defers
+flowReleaseGate() { # -> 0 tag now, 1 defer; --release/--defer forces; the default (incl. a non-TTY stream) defers
     local answer
     case "${FLOW_RELEASE:-}" in
         1|[tT][rR][uU][eE]|[yY][eE][sS]) return 0 ;;

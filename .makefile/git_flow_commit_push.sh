@@ -160,7 +160,8 @@ gitCommitPush() {
 
 }
 
+cliParseArgs "$@"
 if [ -z "$FLOW_REDIRECTED" ]; then
     cliFrameInit
 fi
-gitCommitPush "$@"
+gitCommitPush "${CLI_ARG_POSITIONAL:-}"

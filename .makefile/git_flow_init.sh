@@ -181,4 +181,5 @@ flowInit() {
 }
 
 cliFrameInit
-flowInit "$@"
+cliParseArgs "$@"
+flowInit "${CLI_ARG_POSITIONAL:-}"

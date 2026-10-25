@@ -4,7 +4,7 @@ LIB_DIR="$(cd "$(dirname "$0")" && pwd)"
 
 source "$LIB_DIR/lib_git_flow.sh"
 
-flowClearAsk() { # question -> 0 yes; the default is NO; a non-TTY stream declines; FLOW_CLEAR forces
+flowClearAsk() { # question -> 0 yes; the default is NO; a non-TTY stream declines; --force bypasses
     local answer
     case "${FLOW_CLEAR:-}" in
         1|[tT][rR][uU][eE]|[yY][eE][sS]) return 0 ;;
@@ -249,4 +249,5 @@ flowClear() {
 }
 
 cliFrameInit
-flowClear "$@"
+cliParseArgs "$@"
+flowClear "${CLI_ARG_POSITIONAL:-}"

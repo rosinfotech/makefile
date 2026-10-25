@@ -135,7 +135,7 @@ Run every command from the project root through make: `make <target>`.
   delivered branches (worktree + local + remote), remote-only copies,
   abandoned ones (main was stamped after their fork point), superseded
   trains. The prompt defaults to NO; non-interactive runs report only;
-  `FLOW_CLEAR=1` forces. Dirty worktrees, unmerged content and checked-out
+  `args="--force"` forces. Dirty worktrees, unmerged content and checked-out
   branches are never offered.
 
 ## The five flow variants
@@ -159,14 +159,17 @@ See the README for the diagrams.
   (variant 1, standalone projects) or `git_flow_seal` (variants 2-5);
 - fragments ride the gate branches unconsumed; the seal consumes them.
 
-## Interactive prompts and environment overrides
+## Interactive prompts and command input (args)
 
 Prompts are cyan, never bold; the blank line after an answer belongs to the
 prompt helper. Defaults: `[y/N]` refuses, `[Y/n]` accepts.
 
-- `FLOW_RELEASE=1|0` — forces/defers the seal tag gate (non-TTY defers);
-- `FLOW_YES=1` — accepts the confirm-style prompts (agents, pipelines);
-- `FLOW_CLEAR=1` — forces `git_flow_clear` removal.
+- input reaches a command through a single channel: `make <command> ["<one positional>"] [args="<flags>"]`;
+- long `--kebab-case` flags are canonical, a single-letter short form only for high-frequency flags, an unknown flag fails with exit code 2;
+- `args="--release"` / `args="--defer"` — forces/defers the seal tag gate (non-TTY defers);
+- `args="--yes"` (or `-y`) — accepts the confirm-style prompts (agents, pipelines);
+- `args="--force"` — forces `git_flow_clear` removal;
+- environment variables are not a command interface: the framework reads only industry signals (`NO_COLOR`, `CLICOLOR`, `TERM`, TTY detection).
 
 ## Output CLI standard and exit codes
 

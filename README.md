@@ -216,13 +216,20 @@ worktrees and remote copies, remote-only leftovers, abandoned branches
 declared variant. Dirty worktrees, unmerged content and checked-out
 branches are never offered.
 
-### Environment overrides
+### Command input (args)
 
-| Variable | Effect |
-|----------|--------|
-| `FLOW_RELEASE=1\|0` | forces/defers the seal tag gate (non-TTY defers) |
-| `FLOW_YES=1` | accepts the confirm-style prompts (agents, pipelines) |
-| `FLOW_CLEAR=1` | forces `git_flow_clear` removal |
+User input reaches a command through a single channel:
+`make <command> ["<one positional>"] [args="<flags>"]`. Long `--kebab-case`
+flags are canonical, a single-letter short form exists only for
+high-frequency flags, an unknown flag fails with exit code 2, and
+environment variables are not a command interface (only industry signals
+like `NO_COLOR` are read).
+
+| Flag | Effect |
+|------|--------|
+| `--release` / `--defer` | forces/defers the seal tag gate (non-TTY defers) |
+| `--yes` / `-y` | accepts the confirm-style prompts (agents, pipelines) |
+| `--force` | forces `git_flow_clear` removal |
 
 ## Additional .makefile
 

@@ -4,6 +4,16 @@
 
 # Changelog
 
+## [0.4.0] - 2026-10-25
+
+### Changed
+
+- the single input channel: command input passes only through args="<flags>" (--yes/-y, --release, --defer, --force) - the FLOW_* environment interface is removed
+
+### Removed
+
+- git_flow_prepare_release (the seal handles everything) and the dead preassembled seal branch
+
 ## [0.3.4] - 2026-10-19
 
 ### Added

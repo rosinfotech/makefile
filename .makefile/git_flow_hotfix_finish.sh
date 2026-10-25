@@ -78,4 +78,5 @@ flowHotfixFinish() {
 }
 
 cliFrameInit
-flowHotfixFinish "$@"
+cliParseArgs "$@"
+flowHotfixFinish "${CLI_ARG_POSITIONAL:-}"

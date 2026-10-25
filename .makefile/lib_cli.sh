@@ -151,3 +151,40 @@ cliFrameInit() {
     cliFrameOpen
     trap 'cliFrameClose' EXIT
 }
+
+cliParseArgs() { # "$@" -> FLOW_* globals + CLI_ARG_POSITIONAL; the single input channel: flags and the one positional
+    CLI_ARG_POSITIONAL=""
+    while [ $# -gt 0 ]; do
+        case "$1" in
+            --yes|-y) FLOW_YES=1 ;;
+            --release) FLOW_RELEASE=1 ;;
+            --defer) FLOW_RELEASE=0 ;;
+            --force) FLOW_CLEAR=1 ;;
+            --redirected) FLOW_REDIRECTED=1 ;;
+            --)
+                shift
+                if [ $# -gt 1 ] || { [ $# -eq 1 ] && [ -n "$CLI_ARG_POSITIONAL" ]; }; then
+                    cliError "Expected at most one positional argument - got: $*"
+                    exit 2
+                fi
+                [ $# -eq 1 ] && CLI_ARG_POSITIONAL="$1"
+                return 0
+                ;;
+            -*) 
+                cliError "Unknown flag: $1"
+                cliHint 'Supported: --yes (-y), --release, --defer, --force.'
+                printf '\n' >&2
+                exit 2
+                ;;
+            *)
+                if [ -n "$CLI_ARG_POSITIONAL" ]; then
+                    cliError "Expected at most one positional argument - got '$CLI_ARG_POSITIONAL' and '$1'"
+                    exit 2
+                fi
+                CLI_ARG_POSITIONAL="$1"
+                ;;
+        esac
+        shift
+    done
+    return 0
+}

@@ -52,4 +52,5 @@ flowPromote() {
 }
 
 cliFrameInit
-flowPromote "$@"
+cliParseArgs "$@"
+flowPromote "${CLI_ARG_POSITIONAL:-}"

@@ -128,4 +128,5 @@ flowTaskFinish() {
 }
 
 cliFrameInit
-flowTaskFinish "$@"
+cliParseArgs "$@"
+flowTaskFinish "${CLI_ARG_POSITIONAL:-}"

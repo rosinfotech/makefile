@@ -93,4 +93,5 @@ flowTaskIntegrate() {
 }
 
 cliFrameInit
-flowTaskIntegrate "$@"
+cliParseArgs "$@"
+flowTaskIntegrate "${CLI_ARG_POSITIONAL:-}"
