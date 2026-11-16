@@ -99,7 +99,9 @@ had_original=0
     printf 'git_flow_task_fragment: init\n\t$(call resolve_script,git_flow_task_fragment.sh) "$(filter-out $@,$(MAKECMDGOALS))" $(args)\n\n'
     printf 'git_flow_task_merge_develop: init\n\t$(call resolve_script,git_flow_task_merge_develop.sh) $(args)\n\n'
     printf 'git_flow_task_start: init\n\t$(call resolve_script,git_flow_task_start.sh) "$(filter-out $@,$(MAKECMDGOALS))" $(args)\n\n'
-    printf '%%:\n\t@:\n\n'
+    # Absorber for the positional argument goals; %:: (terminal) so that
+    # GNU make 3.81 does not skip it for goals with known suffixes (.sh).
+    printf '%%::\n\t@:\n\n'
     printf '%s\n' "$END_MARKER"
 } > "$block_file"
 

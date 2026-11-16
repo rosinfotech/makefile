@@ -72,5 +72,11 @@ git_flow_task_merge_develop: init
 git_flow_task_start: init
 	$(call resolve_script,git_flow_task_start.sh) "$(filter-out $@,$(MAKECMDGOALS))" $(args)
 
-%:
+# Absorb the single positional argument of the framework commands
+# (MAKECMDGOALS idiom): the quoted message arrives as an extra goal.
+# TERMINAL (%::) is mandatory: a plain match-anything rule is skipped by
+# GNU make 3.81 for goals with a known suffix (.sh, .c, ...) - the
+# built-in suffix rules shadow it and make dies with
+# "No rule to make target" after the command already ran.
+%::
 	@:

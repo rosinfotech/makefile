@@ -4,6 +4,12 @@
 
 # Changelog
 
+## [0.4.1] - 2026-11-15
+
+### Fixed
+
+- the match-anything absorber rule for positional goals is terminal (`%::`) - GNU make 3.81 no longer aborts with "No rule to make target" for goals with a known suffix (`.sh`, ...) after the command already ran
+
 ## [0.4.0] - 2026-10-25
 
 ### Changed
