@@ -31,7 +31,6 @@ flowTaskFinish() {
     if flowBranchPatchesIn "$branch" "$(flowForkBase "$variant" 2>/dev/null || echo "$FLOW_MAIN_BRANCH")"; then
         cliError "The task is already in its merge-request target - nothing to finish"
         cliHint "Run make git_flow_seal on $FLOW_MAIN_BRANCH after the merge."
-        printf '\n' >&2
         exit 1
     fi
 
@@ -43,7 +42,6 @@ flowTaskFinish() {
         senior=$(flowSeniorFragment "$(flowTaskLabelFromBranch "$branch")") || {
             cliError "The task carries no changelog fragment - add one before finishing"
             cliHint "make git_flow_task_fragment \"Added: one English line\"."
-            printf '\n' >&2
             exit 1
         }
         current_physical="$(cd . && pwd -P)"
@@ -76,7 +74,6 @@ flowTaskFinish() {
                 git checkout "$branch" >/dev/null 2>&1
                 cliError "Conflict merging $branch into main - resolve manually"
                 cliHint "git checkout $FLOW_MAIN_BRANCH && git merge --squash $branch."
-                printf '\n' >&2
                 exit 1
             }
             git commit -m "$senior" >/dev/null 2>&1 || {
@@ -92,7 +89,6 @@ flowTaskFinish() {
 
         cliSuccess "Task entered main as one commit: $senior"
         cliHint "Stamp the version: make git_flow_seal (it switches to main itself)."
-        printf '\n' >&2
         return 0
     fi
 
@@ -102,7 +98,6 @@ flowTaskFinish() {
         [ "$(git rev-parse "$branch" 2>/dev/null)" = "$(git rev-parse "origin/$branch" 2>/dev/null)" ]; then
         cliError "$branch is already pushed - the merge request already exists"
         cliHint "Merge the open request in the repository UI, then run make git_flow_seal."
-        printf '\n' >&2
         exit 1
     fi
 
@@ -112,8 +107,8 @@ flowTaskFinish() {
     }
 
     cliSuccess "Pushed: $branch"
-    printf -- '- merge request: %s -> %s;\n' "$branch" "$target"
-    printf '\n'
+    cliItem "merge request: $branch -> $target"
+    printf '\n' >&3
     if ! flowGitHubCreatePR "$branch" "$target"; then
         flowMergeRequestUrl "$branch" "$target"
     fi
@@ -123,7 +118,6 @@ flowTaskFinish() {
     else
         cliHint "After the MR merge: make git_flow_seal (on $FLOW_MAIN_BRANCH)."
     fi
-    printf '\n' >&2
 
 }
 

@@ -1,5 +1,11 @@
 #!/bin/bash
 
+# The message channel for the progress line: bind fd 3 when the CLI
+# library is not in the context (standalone run via make kill_processes).
+if ! { true >&3; } 2>/dev/null; then
+    exec 3>&1
+fi
+
 # Add any ports (via space) list to terminate processes associated with them
 PORTS=(8081)
 
@@ -24,7 +30,10 @@ wait_for_ports_to_be_free() {
 
     if [ "$active_processes" = true ]; then
 
-        echo "Waiting for processes to finish.."
+        # A progress line is transient: it never reaches a non-TTY stream
+        if [ -t 1 ]; then
+            printf 'Waiting for the processes to finish... ' >&3
+        fi
 
         for port in "${PORTS[@]}"; do
             lsof -ti:$port | xargs -r kill 2>/dev/null
@@ -54,6 +63,10 @@ wait_for_ports_to_be_free() {
                 lsof -ti:$port | xargs -r kill -9 2>/dev/null
             fi
         done
+
+        if [ -t 1 ]; then
+            printf 'done\n' >&3
+        fi
     fi
 }
 

@@ -21,7 +21,6 @@ flowHotfixStart() {
     if [ -z "$label" ]; then
         cliError "The hotfix label is required"
         cliHint "make git_flow_hotfix_start <label>."
-    printf '\n' >&2
         exit 2
     fi
 
@@ -58,14 +57,14 @@ flowHotfixStart() {
     }
 
     cliSuccess "Hotfix branch $branch created (fork: $base_ref, bypasses the queue)"
-    printf -- '- worktree: %s;\n' "$worktree"
-    printf '\n'
-    cliHeader3 "Next steps (rule #2610082120)"
-    printf '1. cd %s;\n' "$worktree"
-    printf '2. make git_flow_task_fragment "Fixed: one English line";\n'
-    printf '3. commit the fix, then create the MR into %s;\n' "$FLOW_MAIN_BRANCH"
-    printf '4. after the merge: make git_flow_seal (it back-merges main everywhere);\n'
-    printf '\n'
+    cliItem "worktree: $worktree"
+    printf '\n' >&3
+    cliHeader2 "Next steps"
+    cliItemNum 1 "cd $worktree"
+    cliItemNum 2 'make git_flow_task_fragment "Fixed: one English line"'
+    cliItemNum 3 "commit the fix, then create the MR into $FLOW_MAIN_BRANCH"
+    cliItemNum 4 "after the merge: make git_flow_seal (it back-merges main everywhere)"
+    printf '\n' >&3
 
 }
 

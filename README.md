@@ -221,15 +221,14 @@ branches are never offered.
 User input reaches a command through a single channel:
 `make <command> ["<one positional>"] [args="<flags>"]`. Long `--kebab-case`
 flags are canonical, a single-letter short form exists only for
-high-frequency flags, an unknown flag fails with exit code 2, and
-environment variables are not a command interface (only industry signals
-like `NO_COLOR` are read).
+high-frequency flags, and an unknown flag fails with exit code 2.
 
 | Flag | Effect |
 |------|--------|
 | `--release` / `--defer` | forces/defers the seal tag gate (non-TTY defers) |
 | `--yes` / `-y` | accepts the confirm-style prompts (agents, pipelines) |
 | `--force` | forces `git_flow_clear` removal |
+| `--color` / `--no-color` | forces the CLI color on (even into a pipe) or off |
 
 ## Additional .makefile
 

@@ -30,7 +30,6 @@ gitCommit() {
     if [ "$current_branch" = "$FLOW_MAIN_BRANCH" ] && (flowDetectVariant) >/dev/null 2>&1; then
         cliWarning "Committing directly on main without a version stamp"
         cliHint "Use make git_flow_commit_push \"<Type>: <message>\" to stamp the version."
-        printf '\n' >&2
     fi
 
     git add .

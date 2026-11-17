@@ -22,7 +22,7 @@ flowTaskIntegrate() {
         task-[0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9]-*)
             ;;
         hotfix-[0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9]-*)
-            cliError "Hotfix branches bypass develop (rule #2610082120)"
+            cliError "Hotfix branches bypass develop - finish the hotfix with make git_flow_hotfix_finish"
             exit 1
             ;;
         *)
@@ -62,7 +62,6 @@ flowTaskIntegrate() {
             git -C "$worktree" merge --abort >/dev/null 2>&1
             cliError "Conflict merging $branch into develop - resolve in $worktree"
             cliHint "git -C $worktree merge $branch."
-            printf '\n' >&2
             exit 1
         }
         git -C "$worktree" push origin develop >/dev/null 2>&1 || {
@@ -76,7 +75,6 @@ flowTaskIntegrate() {
             git checkout "$branch" >/dev/null 2>&1
             cliError "Conflict merging $branch into develop - resolve manually"
             cliHint "git checkout develop && git merge $branch."
-            printf '\n' >&2
             exit 1
         }
         git push origin develop >/dev/null 2>&1 || {
@@ -88,7 +86,6 @@ flowTaskIntegrate() {
 
     cliSuccess "Integrated: $branch -> develop (free merge, no gate)"
     cliHint "Finish with: make git_flow_task_finish."
-    printf '\n' >&2
 
 }
 

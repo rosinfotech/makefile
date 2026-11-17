@@ -24,7 +24,6 @@ flowStamp() {
         if [ -n "$(git -C "$main_worktree" status --porcelain)" ]; then
             cliError "The repository worktree is dirty - commit or stash before stamping"
             cliHint "git -C $main_worktree status."
-            printf '\n' >&2
             exit 1
         fi
         git -C "$main_worktree" checkout "$FLOW_MAIN_BRANCH" >/dev/null 2>&1 || {
@@ -52,7 +51,6 @@ flowStamp() {
         if ! flowReleaseGate; then
             cliInfo "Stamp deferred - the fragments accumulate into the next version"
             cliHint 'Answer y at the gate or rerun with args="--release" to tag.'
-            printf '\n' >&2
             exit 0
         fi
         next=$(getVersion) || exit 1
@@ -70,16 +68,13 @@ flowStamp() {
         old=$(flowLatestTag "origin/$FLOW_MAIN_BRANCH")
         flowSubstituteVersion "$old" "$next"
 
-        echo "=== CHANGELOG section assembled:"
-        printf '\n'
-        sed -n "/^## \[$next\]/,/^## \[/p" CHANGELOG.md | sed '$d' | sed -e :a -e '/^$/{$d;N;ba' -e '}'
-        printf '\n'
+        cliHeader2 "CHANGELOG section assembled"
+        sed -n "/^## \[$next\]/,/^## \[/p" CHANGELOG.md | sed '$d' | sed -e :a -e '/^$/{$d;N;ba' -e '}' >&3
+        printf '\n' >&3
         cliHint "You can edit CHANGELOG.md now, then answer Y."
-        printf '\n' >&2
-        if ! flowConfirm "Continue with the seal?"; then
+        if ! cliConfirm "Continue with the seal"; then
             cliInfo "Declined - the assembled changes stay in the working tree, nothing committed"
             cliHint "Edit CHANGELOG.md and rerun make git_flow_seal, or reset with: git checkout -- ."
-            printf '\n' >&2
             exit 1
         fi
 
@@ -93,6 +88,7 @@ flowStamp() {
         old=$(flowLatestTag "origin/$FLOW_MAIN_BRANCH")
         if flowIsSemver "$next" && [ "$old" = "$next" ]; then
             cliInfo "Already stamped: $next - syncing the branches"
+            cliHint "Main carries no new fragments - merge the open task or promotion requests first when a stamp was intended."
             variant_sync=1
         else
             cliError "No changelog fragments on $FLOW_MAIN_BRANCH - nothing to stamp"
@@ -163,11 +159,11 @@ flowStamp() {
 
     case "$variant" in
         3)
-            flowUpdateBranchFromMain develop && printf '\n'
+            flowUpdateBranchFromMain develop && printf '\n' >&3
             ;;
         4)
             flowUpdateBranchFromMain develop
-            flowUpdateBranchFromMain staging && printf '\n'
+            flowUpdateBranchFromMain staging && printf '\n' >&3
             ;;
         5)
             flowUpdateBranchFromMain develop
@@ -178,7 +174,7 @@ flowStamp() {
                     [ "$(semverCompare "$train_version" "$next")" -le 0 ]; then
                     bumped="release/$(flowBumpMinorBase "$next")"
                     if [ "$bumped" != "$train" ]; then
-                        [ "$sync_open" -eq 0 ] && printf '\n'
+                        [ "$sync_open" -eq 0 ] && printf '\n' >&3
                         sync_open=1
                         cliWarning "The train $train already shipped - bumping to $bumped"
                         git branch -m "$train" "$bumped" 2>/dev/null
@@ -193,7 +189,7 @@ flowStamp() {
                     sync_open=$?
                 fi
             done
-            [ "$sync_open" -eq 0 ] && printf '\n'
+            [ "$sync_open" -eq 0 ] && printf '\n' >&3
             ;;
     esac
 

@@ -70,7 +70,6 @@ gitCommitPush() {
         fi
         cliInfo "Tagging deferred - the commit carries no version or tag"
         cliHint "The next tagged stamp versions the accumulated work."
-        printf '\n' >&2
         exit 0
     fi
 
@@ -79,7 +78,7 @@ gitCommitPush() {
 
         flowUpdateVersionArtifact "${version}"
         if flowSubstituteVersion "$old_version" "${version}"; then
-            if [ "$attempt" -eq 1 ] && ! flowConfirm "Continue with the stamp?"; then
+            if [ "$attempt" -eq 1 ] && ! cliConfirm "Continue with the stamp"; then
                 flowDeclined
             fi
         fi
@@ -141,7 +140,8 @@ gitCommitPush() {
         if git ls-remote "${remote_name}" "refs/tags/${version}" 2>/dev/null | grep -q .; then
             if [ "$attempt" -ge 3 ]; then
                 cliError "Failed to push commit and tag ${version}"
-                printf '%s\n' "$push_output" | sed 's/^/    /' >&2
+                printf '%s\n' "$push_output" | sed 's/^/    /' >&3
+                printf '\n' >&3
                 exit 1
             fi
             recompute=$(bumpPatchVersion "${version}")
@@ -152,7 +152,8 @@ gitCommitPush() {
         else
             git tag -d "${version}" >/dev/null 2>&1
             cliError "Failed to push ${current_branch} and the tag ${version}"
-            printf '%s\n' "$push_output" | sed 's/^/    /' >&2
+            printf '%s\n' "$push_output" | sed 's/^/    /' >&3
+            printf '\n' >&3
             exit 1
         fi
 

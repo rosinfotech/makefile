@@ -6,6 +6,10 @@
 # server registry, no secrets schema, no logging (those live in the
 # consuming project or in lib_secrets.sh).
 #
+
+CLI_LIB_PATH="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/lib_cli.sh"
+[ -f "$CLI_LIB_PATH" ] && source "$CLI_LIB_PATH"
+
 SSH_DEFAULT_PORT=22
 
 SSH_PASSWORD=""
@@ -25,14 +29,14 @@ sshClientSetupAuth() {
     elif [ -n "$SSH_PASSWORD" ]; then
         SSH_AUTH_CMD=(sshpass -p "$SSH_PASSWORD")
     else
-        echo "Error: Neither ssh key nor password is available"
+        cliError "Neither ssh key nor password is available"
         return 1
     fi
 }
 
 sshClientStatus() {
     if [ -z "$SSH_CONNECTION" ]; then
-        echo "Error: SSH not initialized. Call sshClient init first."
+        cliError "SSH not initialized - call sshClient init first"
         return 2
     fi
 
@@ -55,11 +59,11 @@ sshClientStatus() {
 
 sshFileUpload() {
     if [ $# -lt 2 ]; then
-        echo "Usage: sshFileUpload <source> <destination>"
+        cliError "sshFileUpload requires <source> <destination>"
         return 1
     fi
     if [ ! -f "$1" ]; then
-        echo "Source file does not exist: $1"
+        cliError "Source file does not exist: $1"
         return 1
     fi
     sshClient scp "$1" "$2"
@@ -67,11 +71,11 @@ sshFileUpload() {
 
 sshDirectoryUpload() {
     if [ $# -lt 2 ]; then
-        echo "Usage: sshDirectoryUpload <source> <destination> [exclude_pattern]"
+        cliError "sshDirectoryUpload requires <source> <destination> [exclude_pattern]"
         return 1
     fi
     if [ ! -d "$1" ]; then
-        echo "Source directory does not exist: $1"
+        cliError "Source directory does not exist: $1"
         return 1
     fi
     sshClient rsync "$1" "$2" "${3:-}"
@@ -79,12 +83,12 @@ sshDirectoryUpload() {
 
 sshDirectoryDownloadAsArchive() {
     if [ $# -ne 2 ]; then
-        echo "Usage: sshDirectoryDownloadAsArchive <remote_directory> <local_archive>"
+        cliError "sshDirectoryDownloadAsArchive requires <remote_directory> <local_archive>"
         return 1
     fi
 
     if [ -z "$SSH_CONNECTION" ]; then
-        echo "Error: SSH not initialized. Call sshClient init first."
+        cliError "SSH not initialized - call sshClient init first"
         return 1
     fi
 
@@ -100,12 +104,12 @@ sshDirectoryDownloadAsArchive() {
     # tar exit 1 = "file changed as we read it" and similar warnings:
     # the archive is still written and valid - warn but accept.
     if [ $exit_code -eq 1 ]; then
-        echo "Warning: remote tar reported warnings (exit 1, e.g. files changed while reading) - archive accepted: ${local_archive}" >&2
+        cliWarning "Remote tar reported warnings (exit 1, e.g. files changed while reading) - archive accepted: ${local_archive}"
         exit_code=0
     fi
 
     if [ $exit_code -ne 0 ] || [ ! -s "$local_archive" ]; then
-        echo "Archive download failed: $local_archive"
+        cliError "Archive download failed: $local_archive"
         rm -f "$local_archive"
         return 1
     fi
@@ -115,7 +119,7 @@ sshClient() {
     case $1 in
         init)
             if [ $# -lt 4 ]; then
-                echo "Usage: sshClient init <host> <port> <username> [password] [ssh_key]"
+                cliError "sshClient init requires <host> <port> <username> [password] [ssh_key]"
                 return 1
             fi
             SSH_HOST="$2"
@@ -125,7 +129,7 @@ sshClient() {
             SSH_KEY="${6:-}"
             SSH_KEY="${SSH_KEY/#\~/$HOME}"
             if [ -n "$SSH_KEY" ] && [ ! -f "$SSH_KEY" ]; then
-                echo "Warning: ssh key not found: $SSH_KEY"
+                cliWarning "Ssh key not found: $SSH_KEY"
                 SSH_KEY=""
             fi
             SSH_CONNECTION="${SSH_USERNAME}@${SSH_HOST} -p ${SSH_PORT}"
@@ -133,11 +137,11 @@ sshClient() {
             ;;
         exec)
             if [ -z "$SSH_CONNECTION" ]; then
-                echo "Error: SSH not initialized. Call sshClient init first."
+                cliError "SSH not initialized - call sshClient init first"
                 return 1
             fi
             if [ $# -lt 2 ]; then
-                echo "Usage: sshClient exec <command>"
+                cliError "sshClient exec requires <command>"
                 return 1
             fi
             local attempt=0
@@ -154,23 +158,23 @@ sshClient() {
                 if [ $attempt -ge 3 ]; then
                     break
                 fi
-                echo "SSH auth failed (attempt ${attempt}/3), retrying in 3s.."
+                cliInfo "SSH auth failed (attempt ${attempt}/3), retrying in 3s"
                 sleep 3
             done
-            cat "$err" >&2
+            cat "$err"
             rm -f "$err"
             if [ $exit_code -ne 0 ]; then
-                echo "SSH command failed with exit code: $exit_code"
+                cliError "SSH command failed with exit code: $exit_code"
                 return $exit_code
             fi
             ;;
         execf)
             if [ -z "$SSH_CONNECTION" ]; then
-                echo "Error: SSH not initialized. Call sshClient init first."
+                cliError "SSH not initialized - call sshClient init first"
                 return 1
             fi
             if [ $# -lt 2 ]; then
-                echo "Usage: sshClient execf <command>"
+                cliError "sshClient execf requires <command>"
                 return 1
             fi
             local attempt=0
@@ -187,20 +191,20 @@ sshClient() {
                 if [ $attempt -ge 3 ]; then
                     break
                 fi
-                echo "SSH auth failed (attempt ${attempt}/3), retrying in 3s.."
+                cliInfo "SSH auth failed (attempt ${attempt}/3), retrying in 3s"
                 sleep 3
             done
-            cat "$err" >&2
+            cat "$err"
             rm -f "$err"
             return 0
             ;;
         scp)
             if [ -z "$SSH_CONNECTION" ]; then
-                echo "Error: SSH not initialized. Call sshClient init first."
+                cliError "SSH not initialized - call sshClient init first"
                 return 1
             fi
             if [ $# -lt 3 ]; then
-                echo "Usage: sshClient scp <source> <destination>"
+                cliError "sshClient scp requires <source> <destination>"
                 return 1
             fi
             local exit_code=0
@@ -208,17 +212,17 @@ sshClient() {
                 $SSH_OPTIONS \
                 "$2" "${SSH_USERNAME}@${SSH_HOST}:$3" || exit_code=$?
             if [ $exit_code -ne 0 ]; then
-                echo "SCP failed with exit code: $exit_code"
+                cliError "SCP failed with exit code: $exit_code"
                 return $exit_code
             fi
             ;;
         rsync)
             if [ -z "$SSH_CONNECTION" ]; then
-                echo "Error: SSH not initialized. Call sshClient init first."
+                cliError "SSH not initialized - call sshClient init first"
                 return 1
             fi
             if [ $# -lt 3 ]; then
-                echo "Usage: sshClient rsync <source> <destination> [exclude_pattern]"
+                cliError "sshClient rsync requires <source> <destination> [exclude_pattern]"
                 return 1
             fi
             local exit_code=0
@@ -235,17 +239,17 @@ sshClient() {
                 $exclude_opts \
                 "$2/" "${SSH_USERNAME}@${SSH_HOST}:$3/" || exit_code=$?
             if [ $exit_code -ne 0 ]; then
-                echo "Rsync failed with exit code: $exit_code"
+                cliError "Rsync failed with exit code: $exit_code"
                 return $exit_code
             fi
             ;;
         download)
             if [ -z "$SSH_CONNECTION" ]; then
-                echo "Error: SSH not initialized. Call sshClient init first."
+                cliError "SSH not initialized - call sshClient init first"
                 return 1
             fi
             if [ $# -lt 3 ]; then
-                echo "Usage: sshClient download <remote> <local> [exclude_pattern]"
+                cliError "sshClient download requires <remote> <local> [exclude_pattern]"
                 return 1
             fi
             local exit_code=0
@@ -258,7 +262,7 @@ sshClient() {
                 $exclude_opts \
                 "${SSH_USERNAME}@${SSH_HOST}:$2/" "$3/" || exit_code=$?
             if [ $exit_code -ne 0 ]; then
-                echo "Rsync download failed with exit code: $exit_code"
+                cliError "Rsync download failed with exit code: $exit_code"
                 return $exit_code
             fi
             ;;
@@ -273,7 +277,7 @@ sshClient() {
             SSH_USERNAME=""
             ;;
         *)
-            echo "Usage: sshClient {init|exec|execf|scp|rsync|download|cleanup}"
+            cliError "sshClient requires one of: init, exec, execf, scp, rsync, download, cleanup"
             return 1
             ;;
     esac
@@ -281,7 +285,7 @@ sshClient() {
 
 sshDirectoryDownload() {
     if [ $# -lt 2 ]; then
-        echo "Usage: sshDirectoryDownload <remote_directory> <local_directory> [exclude_pattern]"
+        cliError "sshDirectoryDownload requires <remote_directory> <local_directory> [exclude_pattern]"
         return 1
     fi
     sshClient download "$1" "$2" "${3:-}"

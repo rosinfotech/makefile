@@ -16,7 +16,6 @@ flowTaskFragment() {
         cliError "The fragment argument is required"
         cliHint "make git_flow_task_fragment \"<Type>: <one English line>\"."
         cliHint "Types: added, changed, fixed, deprecated, removed, security."
-        printf '\n' >&2
         exit 2
     fi
 
@@ -67,7 +66,6 @@ hotfix-[0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9]-*)
     fi
 
     cliHint "Commit it with the task: make git_flow_commit \"${argument%%:*}: work in progress\"."
-    printf '\n' >&2
 
 }
 

@@ -5,25 +5,10 @@ LIB_DIR="$(cd "$(dirname "$0")" && pwd)"
 source "$LIB_DIR/lib_git_flow.sh"
 
 flowClearAsk() { # question -> 0 yes; the default is NO; a non-TTY stream declines; --force bypasses
-    local answer
     case "${FLOW_CLEAR:-}" in
         1|[tT][rR][uU][eE]|[yY][eE][sS]) return 0 ;;
     esac
-    [ -t 0 ] || return 1
-    if [ "$CLI_COLOR_ERR" = "1" ]; then
-        printf '%s%s [y/N]: %s' "$CLI_CYAN" "$1" "$CLI_RESET" >&2
-    else
-        printf '%s [y/N]: ' "$1" >&2
-    fi
-    if ! read -r answer; then
-        printf '\n' >&2
-        return 1
-    fi
-    printf '\n' >&2
-    case "$answer" in
-        [yY]|[yY][eE][sS]) return 0 ;;
-        *) return 1 ;;
-    esac
+    cliConfirmNo "$1"
 }
 
 flowClearRemove() { # branch -> removes the worktree, the local and the remote copy; prints dense items
@@ -32,21 +17,21 @@ flowClearRemove() { # branch -> removes the worktree, the local and the remote c
     if [ -n "$worktree" ]; then
         if git worktree remove "$worktree" >/dev/null 2>&1 \
             || git worktree remove --force "$worktree" >/dev/null 2>&1; then
-            printf -- '- removed worktree: %s;\n' "$worktree"
+            cliItem "removed worktree: $worktree"
         else
             cliWarning "Failed to remove the worktree $worktree"
         fi
     fi
     if git show-ref --verify --quiet "refs/heads/$branch" 2>/dev/null; then
         if git branch -D "$branch" >/dev/null 2>&1; then
-            printf -- '- removed local: %s;\n' "$branch"
+            cliItem "removed local: $branch"
         else
             cliWarning "Failed to remove the local branch $branch"
         fi
     fi
     if git show-ref --verify --quiet "refs/remotes/origin/$branch" 2>/dev/null; then
         if git push origin --delete "$branch" >/dev/null 2>&1; then
-            printf -- '- removed remote: origin/%s;\n' "$branch"
+            cliItem "removed remote: origin/$branch"
         else
             cliWarning "Failed to remove origin/$branch"
         fi
@@ -133,13 +118,13 @@ flowClear() {
     done
 
     if [ "${#merged_local[@]}" -gt 0 ] || [ "${#merged_remote[@]}" -gt 0 ] || [ "${#merged_notes[@]}" -gt 0 ]; then
-        cliHeader3 "Task and hotfix branches"
+        cliHeader2 "Task and hotfix branches"
         for entry in "${merged_local[@]}" "${merged_remote[@]}"; do
             [ -n "$entry" ] || continue
-            printf -- '- %s (%s);\n' "${entry%%|*}" "${entry#*|}"
+            cliItem "${entry%%|*} (${entry#*|})"
         done
         if [ "${#merged_local[@]}" -gt 0 ] || [ "${#merged_remote[@]}" -gt 0 ]; then
-            printf '\n'
+            printf '\n' >&3
         fi
         for note in "${merged_notes[@]}"; do
             [ -n "$note" ] || continue
@@ -159,10 +144,10 @@ flowClear() {
                     [ -n "$entry" ] || continue
                     branch="${entry%%|*}"
                     git push origin --delete "$branch" >/dev/null 2>&1 \
-                        && printf -- '- removed remote: origin/%s;\n' "$branch"
+                        && cliItem "removed remote: origin/$branch"
                     removed_total=$((removed_total + 1))
                 done
-                printf '\n'
+                printf '\n' >&3
                 cliSuccess "Merged branches cleaned: $removed_total"
             else
                 cliInfo "Declined - the branches stay"
@@ -213,13 +198,13 @@ flowClear() {
     done
 
     if [ "${#unused_local[@]}" -gt 0 ] || [ "${#unused_remote[@]}" -gt 0 ] || [ "${#unused_notes[@]}" -gt 0 ]; then
-        cliHeader3 "Flow branches not used by variant #$variant"
+        cliHeader2 "Flow branches not used by variant #$variant"
         for entry in "${unused_local[@]}" "${unused_remote[@]}"; do
             [ -n "$entry" ] || continue
-            printf -- '- %s (%s);\n' "${entry%%|*}" "${entry#*|}"
+            cliItem "${entry%%|*} (${entry#*|})"
         done
         if [ "${#unused_local[@]}" -gt 0 ] || [ "${#unused_remote[@]}" -gt 0 ]; then
-            printf '\n'
+            printf '\n' >&3
         fi
         for note in "${unused_notes[@]}"; do
             [ -n "$note" ] || continue
@@ -232,7 +217,7 @@ flowClear() {
                     flowClearRemove "${entry%%|*}"
                     removed_total=$((removed_total + 1))
                 done
-                printf '\n'
+                printf '\n' >&3
                 cliSuccess "Flow branches cleaned (total removals: $removed_total)"
             else
                 cliInfo "Declined - the flow branches stay"

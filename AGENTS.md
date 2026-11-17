@@ -21,11 +21,20 @@ any project that vendored it (`.makefile/vendor/rosinfotech/`).
 Only `lib_*.sh` files are sourced by other scripts; everything else is a
 command with a make target:
 
-- `lib_cli.sh` — the Output CLI Standard primitives: `cliError`,
-  `cliWarning`, `cliSuccess`, `cliInfo`, `cliHint`, headers, `cliPath`,
-  the color-gating chain, frames. Message helpers print their own trailing
-  blank line; a hint group is closed by an explicit `printf '\n' >&2` at the
-  call site.
+- `lib_cli.sh` — the Output CLI Standard primitives (the CLI Engineer role
+  rules, 0.9.0): `cliError`, `cliWarning`, `cliSuccess`, `cliInfo`,
+  `cliHint`, the two heading levels (`cliHeader1`/`cliHeader2`), `cliText`,
+  `cliPath`, `cliItem`/`cliItemNum`, the prompt primitives (`cliConfirm`,
+  `cliConfirmNo`, `cliAsk`), the flags-only color gating (`--color`/
+  `--no-color` over the TTY baseline) with the dark/light role palette,
+  and `cliParseArgs`. Every human block travels fd 3, which duplicates
+  stdout at source time - command substitutions inherit fd 3 but capture
+  only stdout, so messages printed inside `$( )` helpers stay visible and
+  the captured values stay clean; plain data results (a version number, a
+  catalog listing) stay on stdout. Every block (heading, message, hint,
+  prompt) prints its own trailing blank separator line - a list is closed
+  by one blank from the call site; messages follow the `TYPE. Text` format
+  (the message drops the trailing period, a hint keeps it).
 - `lib_git_flow.sh` — the flow engine: marker detection, variant gates,
   branch/worktree helpers, gates sync, version resolution and substitution,
   GitHub integration, merged-branch detection. Sourced by every
@@ -161,28 +170,38 @@ See the README for the diagrams.
 
 ## Interactive prompts and command input (args)
 
-Prompts are cyan, never bold; the blank line after an answer belongs to the
-prompt helper. Defaults: `[y/N]` refuses, `[Y/n]` accepts.
+Prompts render in the prompt color, print to stdout and take the blank
+line after the answer; the shapes are `[Y/n]?` (an empty answer accepts)
+and `[y/N]?` (an empty answer refuses). An accepting confirmation in a
+non-TTY stream is refused with an `Error.` message and exit code 2 - rerun
+with `args="--yes"`; the refusing prompts take their safe default.
 
 - input reaches a command through a single channel: `make <command> ["<one positional>"] [args="<flags>"]`;
 - long `--kebab-case` flags are canonical, a single-letter short form only for high-frequency flags, an unknown flag fails with exit code 2;
 - `args="--release"` / `args="--defer"` — forces/defers the seal tag gate (non-TTY defers);
 - `args="--yes"` (or `-y`) — accepts the confirm-style prompts (agents, pipelines);
 - `args="--force"` — forces `git_flow_clear` removal;
-- environment variables are not a command interface: the framework reads only industry signals (`NO_COLOR`, `CLICOLOR`, `TERM`, TTY detection).
+- `args="--color"` / `args="--no-color"` — forces the color on (even into a pipe) or off; environment variables do not participate in the color decision - color is emitted only when stdout is a TTY, and only these flags override it.
 
 ## Output CLI standard and exit codes
 
-Every command follows the Output CLI Standard: stdout carries the result,
-stderr carries errors/warnings/hints; messages auto-blank after themselves;
-lists are dense (`- item;`), one blank after the list; no two consecutive
-blank lines; the TTY output is framed. Exit codes: 0 success, 1 runtime
-failure, 2 usage error — through make a failed recipe surfaces as make's
-exit 2 with `make: *** [target] Error N` (N is the script's code).
+Every command follows the Output CLI Standard: everything the command
+prints - the result, special messages, hints, prompts, prompt refusals -
+goes to stdout; the redirected file tells the same story as the terminal,
+only without the color. Blocks: a heading is a plain colored line (two
+levels, no markers, no bold); exactly one blank separator line follows
+every block, including the last; no two consecutive blank lines. The
+closed message prefixes are `Error.`, `Warning.`, `Success.`, `Hint.`;
+Information renders the Information color alone, without a prefix (the
+owner's choice against prefix noise, mirroring infra). Exit codes: 0
+success, 1 runtime failure, 2 usage error — through make a failed recipe
+surfaces as make's exit 2 with `make: *** [target] Error N` (N is the
+script's code).
 
-Validation: `.flow_test_logs/validate.py` and `validate.sh` check the blank
-discipline of a captured log (headers, messages, dense lists, trailing
-blank; a make diagnostic may end the file when preceded by a blank).
+Validation: `.flow_test_logs/validate.py` checks the blank discipline of a
+captured log (messages, dense lists, trailing blank, no double blanks; a
+make diagnostic may end the file when preceded by a blank; CR line endings
+from a pty capture are normalized).
 
 ## Testing changes
 

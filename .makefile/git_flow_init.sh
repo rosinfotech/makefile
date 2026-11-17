@@ -12,11 +12,11 @@ flowInit() {
 
     if [ -z "$variant" ]; then
         cliError "The variant number is required"
-        cliHeader3Err "Variants (the Git Flow Standard ladder)"
+        cliHeader2 "Variants (the Git Flow Standard ladder)"
         flowStandardCatalog | sort -n | while IFS="$(printf '\t')" read -r row_number row_name row_asset; do
-            printf '%s  %s\n' "$row_number" "$row_name" >&2
+            cliItem "#$row_number - $row_name"
         done
-        printf '\n' >&2
+        printf '\n' >&3
         cliHint "make git_flow_init <number>."
         exit 2
     fi
@@ -157,26 +157,26 @@ flowInit() {
         flowRefreshGateFromMain staging
     fi
 
-    cliHeader3 "Flow"
-    printf -- '- Variant: %s - %s;\n' "$variant" "$name"
+    cliHeader2 "Flow"
+    cliItem "Variant: $variant - $name"
     case "$variant" in
         1)
-            printf -- '- Work: make git_flow_commit_push "<Type>: <message>" (the commit is the stamp);\n'
+            cliItem 'Work: make git_flow_commit_push "<Type>: <message>" (the commit is the stamp)'
             ;;
         2)
-            printf -- '- Work: git_flow_task_start -> git_flow_task_fragment -> git_flow_task_finish -> git_flow_seal;\n'
+            cliItem "Work: git_flow_task_start -> git_flow_task_fragment -> git_flow_task_finish -> git_flow_seal"
             ;;
         3)
-            printf -- '- Work: git_flow_task_start -> git_flow_task_fragment -> git_flow_task_merge_develop -> git_flow_task_finish (MR) -> git_flow_seal;\n'
+            cliItem "Work: git_flow_task_start -> git_flow_task_fragment -> git_flow_task_merge_develop -> git_flow_task_finish (MR) -> git_flow_seal"
             ;;
         4|5)
-            printf -- '- Work: git_flow_task_start -> git_flow_task_fragment -> git_flow_task_merge_develop -> git_flow_task_finish (MR) -> promotion MR -> git_flow_seal;\n'
+            cliItem "Work: git_flow_task_start -> git_flow_task_fragment -> git_flow_task_merge_develop -> git_flow_task_finish (MR) -> promotion MR -> git_flow_seal"
             ;;
         *)
-            printf -- '- Work: no branch scaffold for variant #%s - see the standard;\n' "$variant"
+            cliItem "Work: no branch scaffold for variant #$variant - see the standard"
             ;;
     esac
-    printf '\n'
+    printf '\n' >&3
 
 }
 

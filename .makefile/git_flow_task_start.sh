@@ -15,7 +15,6 @@ flowTaskStart() {
     if [ -z "$label" ]; then
         cliError "The task label is required"
         cliHint "make git_flow_task_start <label>."
-    printf '\n' >&2
         exit 2
     fi
 
@@ -66,13 +65,13 @@ flowTaskStart() {
     fi
 
     cliSuccess "Task branch $branch created (fork: $base_ref)"
-    printf -- '- worktree: %s;\n' "$worktree"
-    printf '\n'
-    cliHeader3 "Next steps"
-    printf '1. cd %s;\n' "$worktree"
-    printf '2. make git_flow_task_fragment "Added: one English line";\n'
-    printf '3. make git_flow_task_merge_develop (variants #3-#5);\n'
-    printf '\n'
+    cliItem "worktree: $worktree"
+    printf '\n' >&3
+    cliHeader2 "Next steps"
+    cliItemNum 1 "cd $worktree"
+    cliItemNum 2 'make git_flow_task_fragment "Added: one English line"'
+    cliItemNum 3 "make git_flow_task_merge_develop (variants #3-#5)"
+    printf '\n' >&3
 
 }
 

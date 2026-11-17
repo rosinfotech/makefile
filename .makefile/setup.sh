@@ -2,61 +2,44 @@
 
 set -e
 
-setup() {
+LIB_DIR="$(cd "$(dirname "$0")" && pwd)"
 
-    if ! command -v sshpass &> /dev/null; then
-        echo "Installing sshpass.."
+source "$LIB_DIR/lib_cli.sh"
+
+cliFrameInit
+
+install_package() { # name brew_formula cmd... -> installs the package with the detected package manager
+    local name="$1" brew_formula="$2"
+    shift 2
+    if ! command -v "$name" &> /dev/null; then
+        cliInfo "Installing $name"
         if command -v apt-get &> /dev/null; then
             sudo apt-get update
-            sudo apt-get install -y sshpass
+            sudo apt-get install -y "$name"
         elif command -v yum &> /dev/null; then
-            sudo yum install -y sshpass
+            sudo yum install -y "$name"
         elif command -v brew &> /dev/null; then
-            brew install hudochenkov/sshpass/sshpass
+            brew install "$brew_formula"
         else
-            echo "Please install sshpass manually"
+            cliError "Install $name manually - no supported package manager found"
             exit 1
         fi
     fi
+}
 
-    if ! command -v rsync &> /dev/null; then
-        echo "Installing rsync.."
-        if command -v apt-get &> /dev/null; then
-            sudo apt-get install -y rsync
-        elif command -v yum &> /dev/null; then
-            sudo yum install -y rsync
-        elif command -v brew &> /dev/null; then
-            brew install rsync
-        else
-            echo "Please install rsync manually"
-            exit 1
-        fi
-    fi
+install_package sshpass hudochenkov/sshpass/sshpass
+install_package rsync rsync
+install_package jq jq
 
-    if ! command -v jq &> /dev/null; then
-        echo "Installing jq.."
-        if command -v apt-get &> /dev/null; then
-            sudo apt-get install -y jq
-        elif command -v yum &> /dev/null; then
-            sudo yum install -y jq
-        elif command -v brew &> /dev/null; then
-            brew install jq
-        else
-            echo "Please install jq manually"
-            exit 1
-        fi
-    fi
+chmod +x ./.makefile/*.sh
 
-    chmod +x ./.makefile/*.sh
+SECRETS_FILE="$HOME/.secrets.json"
 
-    echo "Setup completed successfully"
-    echo ""
-
-    SECRETS_FILE="$HOME/.secrets.json"
-
-    if [ ! -f "$SECRETS_FILE" ]; then
-        echo "Please create $SECRETS_FILE with your credentials:"
-        echo '{
+if [ ! -f "$SECRETS_FILE" ]; then
+    cliSuccess "Setup completed"
+    cliInfo "Create $SECRETS_FILE with your credentials:"
+    cat >&3 <<'JSON_EXAMPLE'
+{
     "tech": {
         "rosinfo": {
             "demo": {
@@ -75,12 +58,10 @@ setup() {
             }
         }
     }
-}'
-    else
-        echo "Setup completed successfully"
-        echo "Secrets file already exists at $SECRETS_FILE"
-    fi
-
 }
-
-setup "$@"
+JSON_EXAMPLE
+    printf '\n' >&3
+else
+    cliSuccess "Setup completed"
+    cliInfo "Secrets file already exists at $SECRETS_FILE"
+fi

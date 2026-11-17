@@ -23,7 +23,6 @@ flowStatus() {
     if ! marker=$(flowMarkerPath); then
         cliInfo "Flow not declared"
         cliHint "Run: make git_flow_init <number>."
-    printf '\n' >&2
         exit 0
     fi
 
@@ -35,119 +34,123 @@ flowStatus() {
     variant="${info%%|*}"
     name="${info#*|}"
 
-    cliHeader3 "Flow"
-    printf -- '- Variant: #%s - %s;\n' "$variant" "$name"
-    printf -- '- Flow file: %s;\n' "$marker"
-    printf '\n'
+    cliHeader2 "Flow"
+    cliItem "Variant: #$variant - $name"
+    cliItem "Flow file: $marker"
+    printf '\n' >&3
 
-    cliHeader3 "Branches"
-    printf -- '- %s: %s;\n' "$FLOW_MAIN_BRANCH" "$(flowBranchState "$FLOW_MAIN_BRANCH")"
-    [ "$variant" -ge 3 ] && printf -- '- develop: %s;\n' "$(flowBranchState develop)"
-    [ "$variant" -eq 4 ] && printf -- '- staging: %s;\n' "$(flowBranchState staging)"
+    cliHeader2 "Branches"
+    cliItem "$FLOW_MAIN_BRANCH: $(flowBranchState "$FLOW_MAIN_BRANCH")"
+    [ "$variant" -ge 3 ] && cliItem "develop: $(flowBranchState develop)"
+    [ "$variant" -eq 4 ] && cliItem "staging: $(flowBranchState staging)"
     if [ "$variant" -eq 5 ]; then
         for train in $(git for-each-ref --format='%(refname:short)' 'refs/heads/release/*'); do
-            printf -- '- %s: %s;\n' "$train" "$(flowBranchState "$train")"
+            cliItem "$train: $(flowBranchState "$train")"
         done
     fi
-    printf '\n'
+    printf '\n' >&3
 
-    cliHeader3 "Version"
+    cliHeader2 "Version"
     tag=$(flowLatestTag "$FLOW_MAIN_BRANCH" 2>/dev/null)
     [ -z "$tag" ] && flowHasRemote && tag=$(flowLatestTag "origin/$FLOW_MAIN_BRANCH" 2>/dev/null)
-    printf -- '- Tag (version truth): %s;\n' "${tag:-none}"
+    cliItem "Tag (version truth): ${tag:-none}"
     if [ -n "$tag" ] && flowIsSemver "$tag"; then
         floor=$(flowBumpPatch "$tag")
-        printf -- '- Default next tag (patch): %s;\n' "$floor"
+        cliItem "Default next tag (patch): $floor"
     fi
     if [ -f .version ]; then
         line1=$(sed -n '1p' .version | tr -d '\n\r')
         line2=$(sed -n '2p' .version | tr -d '\n\r')
-        printf -- '- .version line 1 (current): %s, line 2 (future): %s;\n' \
-            "${line1:-?}" "${line2:-?}"
+        cliItem ".version line 1 (current): ${line1:-?}, line 2 (future): ${line2:-?}"
     fi
-    printf '\n'
+    printf '\n' >&3
 
     if [ -n "$(flowFragmentList)" ]; then
-        cliHeader3 "Fragments"
+        cliHeader2 "Fragments"
         for branch in $(flowFragmentList); do
-            printf -- '- %s;\n' "$branch"
+            cliItem "$branch"
         done
+        printf '\n' >&3
         cliHint 'Make git_flow_seal with args="--release" tags them (the default defers).'
-        printf '\n' >&2
     fi
 
     if [ "$variant" -ge 3 ] && [ "$(flowBranchState develop)" = "missing" ]; then
-        printf -- '- finding: develop is missing (run make git_flow_init %s to create it);\n' "$variant"
+        cliItem "Finding: develop is missing (run make git_flow_init $variant to create it)"
         findings=$((findings + 1))
     fi
     if [ "$variant" -eq 4 ] && [ "$(flowBranchState staging)" = "missing" ]; then
-        printf -- '- Finding: staging is missing (run make git_flow_init 4 to create it);\n'
+        cliItem "Finding: staging is missing (run make git_flow_init 4 to create it)"
         findings=$((findings + 1))
     fi
     if [ "$variant" -eq 5 ] && [ -z "$(flowCurrentTrain)" ]; then
-        printf -- '- Finding: no active release/x.y train (run make git_flow_init 5 to create one);\n'
+        cliItem "Finding: no active release/x.y train (run make git_flow_init 5 to create one)"
         findings=$((findings + 1))
     fi
     if [ "$variant" -le 2 ] && [ "$(flowBranchState staging)" != "missing" ]; then
-        printf -- '- Finding: staging exists but variant #%s does not use it;\n' "$variant"
+        cliItem "Finding: staging exists but variant #$variant does not use it"
         findings=$((findings + 1))
     fi
-    [ "$findings" -gt 0 ] && printf '\n'
+    [ "$findings" -gt 0 ] && printf '\n' >&3
 
-    cliHeader3 "Commands"
+    cliHeader2 "Commands"
     case "$variant" in
         1)
-            printf -- '- git_flow_commit_push: enabled (the commit is the seal);\n'
-            printf -- '- git_flow_task_*: blocked (variant #1 has no task branches);\n'
-            printf -- '- git_flow_hotfix_start: blocked (a production fix is a regular commit);\n'
-            printf -- '\n'
-            printf -- '- git_flow_seal: redirects to git_flow_commit_push;\n'
+            cliItem "git_flow_commit_push: enabled (the commit is the seal)"
+            cliItem "git_flow_task_*: blocked (variant #1 has no task branches)"
+            cliItem "git_flow_hotfix_start: blocked (a production fix is a regular commit)"
+            cliItem "git_flow_seal: redirects to git_flow_commit_push"
             ;;
         2)
-            printf -- '- git_flow_task_start: enabled (fork: %s);\n' "$FLOW_MAIN_BRANCH"
-            printf -- '- git_flow_task_fragment: enabled;\n'
-            printf -- '- git_flow_task_finish: enabled (free merge into %s);\n' "$FLOW_MAIN_BRANCH"
-            printf -- '- git_flow_seal: enabled (after the merge);\n'
-            printf -- '- git_flow_task_merge_develop: blocked (variant #2 has no develop line);\n'
-            printf -- '- git_flow_hotfix_start: blocked (a hotfix is a regular task branch);\n'
+            cliItem "git_flow_task_start: enabled (fork: $FLOW_MAIN_BRANCH)"
+            cliItem "git_flow_task_fragment: enabled"
+            cliItem "git_flow_task_finish: enabled (free merge into $FLOW_MAIN_BRANCH)"
+            cliItem "git_flow_seal: enabled (after the merge)"
+            cliItem "git_flow_task_merge_develop: blocked (variant #2 has no develop line)"
+            cliItem "git_flow_hotfix_start: blocked (a hotfix is a regular task branch)"
             ;;
         3)
-            printf -- '- git_flow_task_start: enabled (fork: %s);\n' "$FLOW_MAIN_BRANCH"
-            printf -- '- git_flow_task_fragment: enabled;\n'
-            printf -- '- git_flow_task_merge_develop: enabled (free merge into develop);\n'
-            printf -- '- git_flow_task_finish: enabled (MR into %s);\n' "$FLOW_MAIN_BRANCH"
-            printf -- '- git_flow_seal: enabled (after the MR merge);\n'
-            printf -- '- git_flow_hotfix_start: blocked (no queue - a fix is a regular task);\n'
+            cliItem "git_flow_task_start: enabled (fork: $FLOW_MAIN_BRANCH)"
+            cliItem "git_flow_task_fragment: enabled"
+            cliItem "git_flow_task_merge_develop: enabled (free merge into develop)"
+            cliItem "git_flow_task_finish: enabled (MR into $FLOW_MAIN_BRANCH)"
+            cliItem "git_flow_seal: enabled (after the MR merge)"
+            cliItem "git_flow_hotfix_start: blocked (no queue - a fix is a regular task)"
             ;;
         4)
-            printf -- '- git_flow_task_start: enabled (fork: staging);\n'
-            printf -- '- git_flow_task_fragment: enabled;\n'
-            printf -- '- git_flow_task_merge_develop: enabled (free merge into develop);\n'
-            printf -- '- git_flow_task_finish: enabled (MR into staging);\n'
-            printf -- '- git_flow_hotfix_start: enabled (fork: main, bypasses the queue);\n'
-            printf -- '- git_flow_seal: enabled (after the promotion / hotfix merge);\n'
+            cliItem "git_flow_task_start: enabled (fork: staging)"
+            cliItem "git_flow_task_fragment: enabled"
+            cliItem "git_flow_task_merge_develop: enabled (free merge into develop)"
+            cliItem "git_flow_task_finish: enabled (MR into staging)"
+            cliItem "git_flow_hotfix_start: enabled (fork: main, bypasses the queue)"
+            cliItem "git_flow_seal: enabled (after the promotion / hotfix merge)"
             ;;
         5)
-            printf -- '- git_flow_task_start: enabled (fork: release/x.y);\n'
-            printf -- '- git_flow_task_fragment: enabled;\n'
-            printf -- '- git_flow_task_merge_develop: enabled (free merge into develop);\n'
-            printf -- '- git_flow_task_finish: enabled (MR into release/x.y);\n'
-            printf -- '- git_flow_hotfix_start: enabled (fork: main, bypasses the queue);\n'
-            printf -- '- git_flow_seal: enabled (after the release / hotfix merge);\n'
+            cliItem "git_flow_task_start: enabled (fork: release/x.y)"
+            cliItem "git_flow_task_fragment: enabled"
+            cliItem "git_flow_task_merge_develop: enabled (free merge into develop)"
+            cliItem "git_flow_task_finish: enabled (MR into release/x.y)"
+            cliItem "git_flow_hotfix_start: enabled (fork: main, bypasses the queue)"
+            cliItem "git_flow_seal: enabled (after the release / hotfix merge)"
             ;;
         *)
-            printf -- '- commands: unknown variant #%s - see the standard;\n' "$variant"
+            cliItem "commands: unknown variant #$variant - see the standard"
             ;;
     esac
-    printf '\n'
+    printf '\n' >&3
 
-    cliHeader3 "Rules"
+    cliHeader2 "Rules"
     sed -n 's/^- //p' "$marker" 2>/dev/null | while read -r branch; do
-        printf -- '- '
-        cliPath "$branch"
-        printf ';\n'
+        if [ "$CLI_COLOR_OUT" = "1" ]; then
+            printf '%s- %s' "$CLI_TEXT" "$CLI_RESET" >&3
+            cliPath "$branch" >&3
+            printf '%s;%s\n' "$CLI_TEXT" "$CLI_RESET" >&3
+        else
+            printf -- '- ' >&3
+            printf '%s' "$branch" >&3
+            printf ';\n' >&3
+        fi
     done
-    printf '\n'
+    printf '\n' >&3
 
 }
 

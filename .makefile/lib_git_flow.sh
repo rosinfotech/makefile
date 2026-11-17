@@ -64,7 +64,6 @@ flowStandardCatalog() { # prints "number<TAB>name<TAB>asset" per marker asset of
     listing=$(curl -fsSL --max-time 20 "$FLOW_STANDARD_API") || {
         cliError "Cannot fetch the assets listing from the standards repository"
         cliHint "$FLOW_STANDARD_API."
-        printf '\n' >&2
         return 1
     }
     for asset in $(printf '%s' "$listing" \
@@ -81,7 +80,6 @@ flowFetchMarkerAsset() { # asset name dest -> writes the marker content as-is
     curl -fsSL --max-time 20 "$FLOW_STANDARD_RAW/$1" -o "$2" || {
         cliError "Cannot fetch the marker asset $1"
         cliHint "$FLOW_STANDARD_RAW/$1."
-    printf '\n' >&2
         rm -f "$2"
         return 1
     }
@@ -116,7 +114,6 @@ flowRequireFlow() {
     if [ -z "$variant" ]; then
         cliError "No flow declared (.git_flow/.git-flow-* missing) - declare the variant first"
         cliHint "make git_flow_init <number>."
-        printf '\n' >&2
         exit 1
     fi
     echo "$variant"
@@ -166,7 +163,6 @@ flowForkBase() {
             flowCurrentTrain || {
                 cliError "Variant #5 requires an active release/x.y train"
                 cliHint "make git_flow_init 5 creates one."
-                printf '\n' >&2
                 exit 1
             }
             ;;
@@ -226,7 +222,6 @@ hotfix-[0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9]-*)
     if ! echo "$FLOW_TYPE_ORDER" | grep -qw "$type" || [ -z "$rest" ]; then
         cliError "Task commits follow \"<Type>: <message>\" - got '${message}'"
         cliHint "Types: $(echo $FLOW_TYPE_ORDER | sed 's/ /, /g')."
-        printf '\n' >&2
         exit 2
     fi
     return 0
@@ -395,36 +390,9 @@ $(flowVersionTargets)
 TARGETS
 }
 
-flowConfirm() { # question -> 0 yes, 1 no; --yes/-y (agents, pipelines) or a non-TTY stream bypasses
-    local answer
-    case "${FLOW_YES:-}" in
-        ''|0|[nN][oO]|[fF][aA][lL][sS][eE]) ;;
-        *) return 0 ;;
-    esac
-    [ -t 0 ] || return 0
-    if [ "$CLI_COLOR_ERR" = "1" ]; then
-        printf '%s%s [Y/n]: %s' "$CLI_CYAN" "$1" "$CLI_RESET" >&2
-    else
-        printf '%s [Y/n]: ' "$1" >&2
-    fi
-    if ! read -r answer; then
-        return 0
-    fi
-    printf '\n' >&2
-    case "$answer" in
-        ''|[yY]|[yY][eE][sS]) return 0 ;;
-        [nN]|[nN][oO]) return 1 ;;
-        *)
-            cliError "Unknown answer '${answer}' - expected Y or n"
-            exit 2
-            ;;
-    esac
-}
-
 flowDeclined() {
     cliInfo "Declined - the substitution stays in the working tree, nothing committed"
     cliHint "Review the files, rerun the command to continue, or revert with: git checkout -- ."
-    printf '\n' >&2
     exit 1
 }
 
@@ -435,14 +403,19 @@ flowVersionPrompt() { # computed_version -> echoes the version to use (may be ov
         1|[tT][rR][uU][eE]|[yY][eE][sS]) echo "$computed"; return 0 ;;
     esac
     [ -t 0 ] || { echo "$computed"; return 0; }
-    printf '%sVersion to be applied: %s%s\n\n' "$CLI_CYAN" "$computed" "$CLI_RESET" >&2
-    printf '%sUse this? [Y] or type a different version: %s' "$CLI_CYAN" "$CLI_RESET" >&2
+    if [ "$CLI_COLOR_OUT" = "1" ]; then
+        printf '%sVersion to be applied: %s%s\n\n' "$CLI_PROMPT" "$computed" "$CLI_RESET" >&3
+        printf '%sUse this? [Y] or type a different version: %s' "$CLI_PROMPT" "$CLI_RESET" >&3
+    else
+        printf 'Version to be applied: %s\n\n' "$computed" >&3
+        printf 'Use this? [Y] or type a different version: ' >&3
+    fi
     if ! read -r answer; then
-        printf '\n' >&2
+        printf '\n' >&3
         echo "$computed"
         return 0
     fi
-    printf '\n' >&2
+    printf '\n' >&3
     case "$answer" in
         ''|[yY]|[yY][eE][sS])
             echo "$computed"
@@ -466,15 +439,16 @@ flowReleaseGate() { # -> 0 tag now, 1 defer; --release/--defer forces; the defau
         0|[fF][aA][lL][sS][eE]|[nN][oO]) return 1 ;;
     esac
     [ -t 0 ] || return 1
-    if [ "$CLI_COLOR_ERR" = "1" ]; then
-        printf '%s%s [y/N]: %s' "$CLI_CYAN" "Tag now (the tag may trigger a deploy)?" "$CLI_RESET" >&2
+    if [ "$CLI_COLOR_OUT" = "1" ]; then
+        printf '%s%s [y/N]? %s' "$CLI_PROMPT" "Tag now (the tag may trigger a deploy)" "$CLI_RESET" >&3
     else
-        printf 'Tag now (the tag may trigger a deploy)? [y/N]: ' >&2
+        printf 'Tag now (the tag may trigger a deploy) [y/N]? ' >&3
     fi
     if ! read -r answer; then
+        printf '\n' >&3
         return 1
     fi
-    printf '\n' >&2
+    printf '\n' >&3
     case "$answer" in
         [yY]|[yY][eE][sS]) return 0 ;;
         ''|[nN]|[nN][oO]) return 1 ;;
@@ -498,8 +472,10 @@ flowSubstituteVersion() { # old new - applies the substitution, reports; 0 = sub
     fi
     flowSubstituteApply "$old" "$new"
     cliInfo "Version substitution applied (${old} -> ${new}):"
-    echo "$scan" | sed 's/^/    - /; s/$/;/'
-    printf '\n'
+    echo "$scan" | while IFS= read -r hit; do
+        cliItem "$hit"
+    done
+    printf '\n' >&3
     cliInfo "$(echo "$scan" | wc -l | tr -d ' ') location(s) substituted"
     return 0
 }
@@ -602,7 +578,7 @@ flowUpdateBranchFromMainOnce() {
                 return 1
             }
         fi
-        printf -- '- reset: %s -> %s (%s);\n' "$branch" "$FLOW_MAIN_BRANCH" "$reset_reason"
+        cliItem "reset: $branch -> $FLOW_MAIN_BRANCH ($reset_reason)"
         return 0
     fi
     if flowBranchPatchesIn "$branch" "$FLOW_MAIN_BRANCH"; then
@@ -622,7 +598,7 @@ flowUpdateBranchFromMainOnce() {
                 return 1
             }
         fi
-        printf -- '- reset: %s -> %s (fully promoted);\n' "$branch" "$FLOW_MAIN_BRANCH"
+        cliItem "reset: $branch -> $FLOW_MAIN_BRANCH (fully promoted)"
         return 0
     fi
     if [ "$branch" = "$(flowCurrentBranch)" ]; then
@@ -635,16 +611,15 @@ flowUpdateBranchFromMainOnce() {
             cliWarning "Failed to push $branch"
             return 1
         }
-        printf -- '- synced: %s -> %s;\n' "$FLOW_MAIN_BRANCH" "$branch"
+        cliItem "synced: $FLOW_MAIN_BRANCH -> $branch"
         return 0
     fi
     worktree=$(flowBranchWorktree "$branch")
     if [ -n "$worktree" ]; then
         if [ -n "$(git -C "$worktree" status --porcelain)" ]; then
-            cliWarning "$branch is checked out dirty in $worktree - sync skipped"
-            cliHint "git -C $worktree merge $FLOW_MAIN_BRANCH."
-            printf '\n' >&2
-            return 1
+        cliWarning "$branch is checked out dirty in $worktree - sync skipped"
+        cliHint "git -C $worktree merge $FLOW_MAIN_BRANCH."
+        return 1
         fi
         if ! git -C "$worktree" merge --no-edit "$FLOW_MAIN_BRANCH"; then
             cliError "Conflict syncing $FLOW_MAIN_BRANCH into $branch - resolve manually"
@@ -654,7 +629,7 @@ flowUpdateBranchFromMainOnce() {
             cliWarning "Failed to push $branch"
             return 1
         }
-        printf -- '- synced: %s -> %s;\n' "$FLOW_MAIN_BRANCH" "$branch"
+        cliItem "synced: $FLOW_MAIN_BRANCH -> $branch"
         return 0
     fi
     if git fetch . "$FLOW_MAIN_BRANCH:$branch" 2>/dev/null; then
@@ -662,7 +637,7 @@ flowUpdateBranchFromMainOnce() {
             cliWarning "Failed to push $branch"
             return 1
         }
-        printf -- '- synced: %s -> %s;\n' "$FLOW_MAIN_BRANCH" "$branch"
+        cliItem "synced: $FLOW_MAIN_BRANCH -> $branch"
         return 0
     fi
     tmp=$(mktemp -d)
@@ -670,7 +645,7 @@ flowUpdateBranchFromMainOnce() {
         if git -C "$tmp" merge --no-edit "$FLOW_MAIN_BRANCH" >/dev/null 2>&1; then
             git push origin "$branch" >/dev/null 2>&1
             git worktree remove --force "$tmp" >/dev/null 2>&1
-            printf -- '- synced: %s -> %s (merged);\n' "$FLOW_MAIN_BRANCH" "$branch"
+            cliItem "synced: $FLOW_MAIN_BRANCH -> $branch (merged)"
             return 0
         fi
         cliError "Conflict syncing $FLOW_MAIN_BRANCH into $branch - resolve in $tmp (worktree kept)"
@@ -679,7 +654,6 @@ flowUpdateBranchFromMainOnce() {
     rm -rf "$tmp"
     cliWarning "$branch cannot sync with $FLOW_MAIN_BRANCH - sync manually"
     cliHint "git checkout $branch && git merge $FLOW_MAIN_BRANCH."
-    printf '\n' >&2
     return 1
 }
 
@@ -750,7 +724,7 @@ except Exception:
     http_code=$(printf '%s' "$response" | tail -1)
     if [ "$http_code" = "201" ]; then
         pr_url=$(printf '%s' "$response" | sed -n 's/.*"html_url": *"\([^"]*pull[^"]*\)".*/\1/p' | head -1)
-        [ -n "$pr_url" ] && { printf '%s\n\n' "$pr_url"; return 0; }
+        [ -n "$pr_url" ] && { cliLink "$pr_url"; return 0; }
     fi
     return 1
 }
@@ -785,10 +759,10 @@ flowCleanupMergedBranches() { # removes the merged branches after a report and a
     [ -z "$merged" ] && return 0
     cliInfo "Merged task branches to clean up:"
     for branch in $merged; do
-        printf -- '- %s;\n' "$branch"
+        cliItem "$branch"
     done
-    printf '\n'
-    if ! flowConfirm "Remove the merged branches (and their worktrees)?"; then
+    printf '\n' >&3
+    if ! cliConfirm "Remove the merged branches (and their worktrees)"; then
         cliInfo "Declined - the branches stay"
         return 0
     fi
@@ -806,9 +780,9 @@ flowCleanupMergedBranches() { # removes the merged branches after a report and a
         if git show-ref --verify --quiet "refs/remotes/origin/$branch" 2>/dev/null; then
             git push origin --delete "$branch" >/dev/null 2>&1
         fi
-        printf -- '- removed: %s;\n' "$branch"
+        cliItem "removed: $branch"
     done
-    printf '\n'
+    printf '\n' >&3
 }
 
 
@@ -839,23 +813,10 @@ except Exception:
     pass
 " 2>/dev/null)
     [ -z "$pat" ] && return 1
-    printf '%s%s [y/N]: %s' "$CLI_CYAN" "Create GitHub release notes for ${version}?" "$CLI_RESET" >&2
-    if ! read -r answer; then
-        printf '\n\n' >&2
+    if ! cliConfirmNo "Create GitHub release notes for ${version}"; then
+        cliInfo "GitHub release skipped"
         return 0
     fi
-    if [ -t 0 ]; then
-        printf '\n' >&2
-    else
-        printf '\n\n' >&2
-    fi
-    case "$answer" in
-        [yY]|[yY][eE][sS]) ;;
-        *)
-            cliInfo "GitHub release skipped"
-            return 0
-            ;;
-    esac
     body=$(awk "/^## \[${version}\]/{found=1;next} /^## \[/{if(found)exit} found{print}" CHANGELOG.md 2>/dev/null | sed '/^$/d')
     body_json=$(printf '%s' "$body" | python3 -c 'import sys,json; print(json.dumps(sys.stdin.read()))')
     response=$(curl -s -w "\n%{http_code}" \
@@ -869,10 +830,9 @@ except Exception:
         cliSuccess "GitHub release created: https://github.com/${owner}/${repo}/releases/tag/${version}"
     else
         cliWarning "GitHub release creation failed (HTTP ${http_code})"
-        printf '%s\n' "$response" | head -3 >&2
-        printf '\n' >&2
+        printf '%s\n' "$response" | head -3
+        printf '\n' >&3
         cliHint "Check the fine-grained PAT has Contents: Read and write for ${owner}/${repo}."
-        printf '\n' >&2
     fi
     return 0
 }
@@ -881,7 +841,6 @@ flowMergeRequestUrl() {
     local branch="$1" target="$2" url
     url=$(git remote get-url origin 2>/dev/null)
     if [ -z "$url" ]; then
-        printf '\n' >&2
         cliWarning "No origin remote - create the merge request manually: $branch -> $target"
         return 0
     fi
@@ -897,16 +856,15 @@ flowMergeRequestUrl() {
     case "$url" in
         *github.com*)
             if [ "$target" != "$FLOW_MAIN_BRANCH" ]; then
-                printf '%s\n\n' "$url/compare/$target...$branch?expand=1"
+                cliLink "$url/compare/$target...$branch?expand=1"
             else
-                printf '%s\n\n' "$url/pull/new/$branch"
+                cliLink "$url/pull/new/$branch"
             fi
             ;;
         *gitlab*)
-            printf '%s\n\n' "$url/-/merge_requests/new?merge_request%5Bsource_branch%5D=$branch"
+            cliLink "$url/-/merge_requests/new?merge_request%5Bsource_branch%5D=$branch"
             ;;
         *)
-            printf '\n' >&2
             cliWarning "Unknown forge - create the merge request manually: $branch -> $target ($url)"
             ;;
     esac

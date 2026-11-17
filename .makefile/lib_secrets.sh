@@ -7,6 +7,9 @@
 # call requireSecrets for a fatal check.
 #
 
+CLI_LIB_PATH="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/lib_cli.sh"
+[ -f "$CLI_LIB_PATH" ] && source "$CLI_LIB_PATH"
+
 SECRETS_FILE="${SECRETS_FILE:-$HOME/.secrets.json}"
 export SECRETS_FILE
 
@@ -29,11 +32,11 @@ secretsExist() {
 
 requireSecrets() {
     if ! secretsExist; then
-        echo "Error: secrets file not found: $SECRETS_FILE" >&2
+        cliError "Secrets file not found: $SECRETS_FILE"
         return 1
     fi
     if ! command -v jq > /dev/null 2>&1; then
-        echo "Error: jq is not installed" >&2
+        cliError "jq is not installed"
         return 1
     fi
 }

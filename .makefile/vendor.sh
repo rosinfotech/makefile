@@ -25,19 +25,23 @@ SELF="$(cd "$(dirname "$0")" && pwd)/$(basename "$0")"
 PROJECT_ROOT="$(dirname "$(dirname "$SELF")")"
 SRC="$PROJECT_ROOT/.makefile"
 
+source "$SRC/lib_cli.sh"
+
 MARKER="# --- vendored makefile framework (make vendor) ---"
 DEST_REL=".makefile/vendor/rosinfotech"
 
 TARGET="${1:-$PWD}"
 if [ ! -d "$TARGET" ]; then
-    mkdir -p "$TARGET" || { echo "Error: cannot create directory: $TARGET" >&2; exit 1; }
+    mkdir -p "$TARGET" || { cliError "Cannot create the directory: $TARGET"; exit 1; }
 fi
 TARGET="$(cd "$TARGET" && pwd)"
 if [ "$TARGET" = "$PROJECT_ROOT" ]; then
-    echo "Error: refusing to vendor the makefile repository itself" >&2
+    cliError "Refusing to vendor the makefile repository itself"
     exit 1
 fi
 cd "$TARGET"
+
+cliFrameInit
 
 # --- 1. Scaffold an empty project (first run without a Makefile) -------
 
@@ -111,9 +115,9 @@ elif grep -qF "$MARKER" Makefile; then
     start_line="$(awk -v m="$MARKER" 'index($0, m) == 1 { print NR; exit }' Makefile)"
     end_line="$(awk -v m="$END_MARKER" 'index($0, m) == 1 && NR > 1 { print NR; exit }' Makefile)"
     if [ -z "$start_line" ] || [ -z "$end_line" ] || [ "$start_line" -ge "$end_line" ]; then
-        echo "Warning: vendored block markers not found or malformed - Makefile left untouched" >&2
+        cliWarning "Vendored block markers not found or malformed - Makefile left untouched"
     elif [ "$(sed -n "${start_line},${end_line}p" Makefile)" = "$(cat "$block_file")" ]; then
-        echo "Makefile already vendored - refreshing ${DEST_REL}/ only"
+        cliInfo "Makefile already vendored - refreshing ${DEST_REL}/ only"
     else
         cp Makefile "$original_file"
         had_original=1
@@ -123,7 +127,7 @@ elif grep -qF "$MARKER" Makefile; then
             sed -n "$((end_line + 1)),\$p" Makefile
         } > Makefile.new
         mv Makefile.new Makefile
-        echo "Makefile: vendored block upgraded to the current template"
+        cliInfo "Makefile: vendored block upgraded to the current template"
     fi
 else
     cp Makefile "$original_file"
@@ -140,9 +144,9 @@ if [ "$scaffold" -eq 1 ] || ! grep -qF "$MARKER" Makefile 2>/dev/null; then
     } > Makefile.new
     mv Makefile.new Makefile
     if [ "$scaffold" -eq 0 ]; then
-        echo "Makefile: standalone definitions prepended"
+        cliInfo "Makefile: standalone definitions prepended"
     else
-        echo "Makefile: created with the standalone definitions"
+        cliInfo "Makefile: created with the standalone definitions"
     fi
 fi
 rm -f "$block_file"
@@ -151,10 +155,12 @@ rm -f "$block_file"
 
 legacy="$(sed -n '/^# --- end vendored makefile framework ---$/,$p' Makefile | grep -nE '^(echo|init|clear|git_commit|git_commit_push|git_commit_version|kill_processes|setup|show_version|update_version|version_show|version_update):' || true)"
 if [ -n "$legacy" ]; then
-    echo "Warning: legacy framework targets found below the vendored block (GNU make" >&2
-    echo "lets these later definitions override the vendored ones):" >&2
-    printf '%s\n' "$legacy" >&2
-    echo "Remove them - the vendored block already provides these targets." >&2
+    cliWarning "Legacy framework targets found below the vendored block (GNU make lets these later definitions override the vendored ones):"
+    printf '%s\n' "$legacy" | while IFS= read -r row; do
+        cliItem "$row"
+    done
+    printf '\n' >&3
+    cliHint "Remove them - the vendored block already provides these targets."
 fi
 
 # --- 3. Refresh the vendor directory (fully managed) --------------------
@@ -189,24 +195,24 @@ Remove:   rm -rf ${DEST_REL} and delete the "${MARKER}" block from the Makefile
 This directory is fully managed - never edit it by hand.
 MANIFEST
 
-echo "Vendored: ${count} items -> ${DEST_REL}/ (commit ${commit_sha})"
+cliSuccess "Vendored: ${count} items -> ${DEST_REL}/ (commit ${commit_sha})"
 
 # --- 5. Validate with the system make --------------------------------------
 
 MAKE_BIN="$(command -v make)"
 [ -x /usr/bin/make ] && MAKE_BIN=/usr/bin/make
 if "$MAKE_BIN" -n -C "$TARGET" init > /dev/null 2>&1; then
-    echo "Validation ok: standalone make parses the Makefile (init)"
+    cliSuccess "Validation ok: standalone make parses the Makefile (init)"
 else
     if [ "$had_original" -eq 1 ]; then
         cp "$original_file" Makefile
-        echo "Error: validation failed - the Makefile was restored" >&2
+        cliError "Validation failed - the Makefile was restored"
     fi
     rm -f "$original_file"
     rm -rf "$DEST_REL"
-    echo "Error: validation failed - the vendor directory was removed" >&2
+    cliError "Validation failed - the vendor directory was removed"
     exit 1
 fi
 rm -f "$original_file"
 
-echo "Done: the project is independent from the linked makefile"
+cliSuccess "Done: the project is independent from the linked makefile"

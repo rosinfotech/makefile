@@ -74,34 +74,47 @@ LOCAL_VERSION="$(get_version "$PHYS_PWD")"
 
 cliFrameInit
 cliHeader1 "Hello, ${USER:-$(whoami)}!"
-printf -- '- util: rosinfo.tech makefile'
+util_line="util: rosinfo.tech makefile"
 if [ -n "$FRAMEWORK_VERSION" ]; then
-    printf ' v%s' "$FRAMEWORK_VERSION"
+    util_line="$util_line v$FRAMEWORK_VERSION"
 fi
-printf ';\n'
+cliItem "$util_line"
 if [ "$PHYS_PWD" != "$PHYS_GLOBAL_ROOT" ] && [ -n "$LOCAL_VERSION" ]; then
-    printf -- '- project: '
-    cliPath "$PHYS_PWD"
-    printf ' (v%s);\n' "$LOCAL_VERSION"
+    project_path="${PHYS_PWD/#$HOME/\~}"
+    if [ "$CLI_COLOR_OUT" = "1" ]; then
+        printf '%s- project: %s' "$CLI_TEXT" "$CLI_RESET" >&3
+        cliPath "$project_path" >&3
+        printf '%s (v%s);%s\n' "$CLI_TEXT" "$LOCAL_VERSION" "$CLI_RESET" >&3
+    else
+        printf -- '- project: ' >&3
+        printf '%s' "$project_path" >&3
+        printf ' (v%s);\n' "$LOCAL_VERSION" >&3
+    fi
 fi
-printf -- '- source: '
-cliPath "https://github.com/rosinfotech/makefile"
-printf ';\n'
-printf '\n'
+if [ "$CLI_COLOR_OUT" = "1" ]; then
+    printf '%s- source: %s' "$CLI_TEXT" "$CLI_RESET" >&3
+    cliPath "https://github.com/rosinfotech/makefile" >&3
+    printf '%s;%s\n' "$CLI_TEXT" "$CLI_RESET" >&3
+else
+    printf -- '- source: ' >&3
+    printf '%s' "https://github.com/rosinfotech/makefile" >&3
+    printf ';\n' >&3
+fi
+printf '\n' >&3
 
-cliHeader3 "Available commands"
+cliHeader2 "Available commands"
 
 SCRIPT_MAP="$(get_script_commands "$PHYS_PWD")"
 
 for cmd in $(get_commands "$PHYS_PWD"); do
-    printf -- '- %s' "$cmd"
+    line="$cmd"
     if is_vendored "$cmd"; then
         if [ "$CLI_COLOR_OUT" = "1" ]; then
-            printf '%s (vendored)%s' "$CLI_GRAY" "$CLI_RESET"
+            line="$cmd${CLI_INFO} (vendored)${CLI_RESET}${CLI_TEXT}"
         else
-            printf ' (vendored)'
+            line="$cmd (vendored)"
         fi
     fi
-    printf ';\n'
+    cliItem "$line"
 done
-printf '\n'
+printf '\n' >&3

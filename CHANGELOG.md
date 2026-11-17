@@ -4,6 +4,25 @@
 
 # Changelog
 
+## [0.5.0] - 2026-11-18
+
+### Changed
+
+- the CLI output follows the 0.9.0 Output CLI Standard: everything travels stdout through the fd 3 message channel (messages inside `$( )` captures stay visible, the captured values stay clean), the closed role palette with the dark/light theme, the `TYPE. Text` format, two plain heading levels and flags-only color (`--color` / `--no-color`)
+- prompts render in the prompt color with the `[Y/n]?` / `[y/N]?` shapes and the blank after the answer; an accepting confirmation in a non-TTY stream refuses with exit code 2 (`--yes` bypasses)
+- Information messages render the Information color alone, without a prefix (the owner's choice, mirroring infra)
+- environment variables no longer participate in the color decision - the `NO_COLOR`, `CLICOLOR` and `TERM` gates are removed (the flags-only override supersedes the ADR 0001 industry-signals clause)
+- PR and MR links render in the Information color (`cliLink`)
+- internal rule numbers no longer leak into the user output
+
+### Added
+
+- the block helpers (`cliItem`, `cliItemNum`, `cliText`, `cliLink`, `cliConfirm`, `cliConfirmNo`, `cliAsk`) and the `Version` heading in version_show
+
+### Fixed
+
+- the seal sync-only run now hints that main carries no new fragments while task or promotion requests stay unmerged
+
 ## [0.4.1] - 2026-11-15
 
 ### Fixed

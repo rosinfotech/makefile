@@ -41,13 +41,12 @@ flowPromote() {
     fi
 
     cliSuccess "Promoting $source -> $FLOW_MAIN_BRANCH"
-    printf -- '- merge request: %s -> %s;\n' "$source" "$FLOW_MAIN_BRANCH"
-    printf '\n'
+    cliItem "merge request: $source -> $FLOW_MAIN_BRANCH"
+    printf '\n' >&3
     if ! flowGitHubCreatePR "$source" "$FLOW_MAIN_BRANCH"; then
         flowMergeRequestUrl "$source" "$FLOW_MAIN_BRANCH"
     fi
     cliHint "Merge the pull request (squash), then run: make git_flow_seal."
-    printf '\n' >&2
 
 }
 

@@ -37,7 +37,6 @@ flowHotfixFinish() {
     flowSeniorFragment "$(flowTaskLabelFromBranch "$branch")" >/dev/null || {
         cliError "The hotfix carries no changelog fragment - add one before finishing"
         cliHint "make git_flow_task_fragment \"Fixed: one English line\"."
-        printf '\n' >&2
         exit 1
     }
 
@@ -48,7 +47,6 @@ flowHotfixFinish() {
     if flowBranchPatchesIn "$branch" "$FLOW_MAIN_BRANCH"; then
         cliError "The hotfix is already in $FLOW_MAIN_BRANCH - nothing to finish"
         cliHint "Run make git_flow_seal on $FLOW_MAIN_BRANCH after the merge."
-        printf '\n' >&2
         exit 1
     fi
 
@@ -56,7 +54,6 @@ flowHotfixFinish() {
         [ "$(git rev-parse "$branch" 2>/dev/null)" = "$(git rev-parse "origin/$branch" 2>/dev/null)" ]; then
         cliError "$branch is already pushed - the merge request already exists"
         cliHint "Merge the open request in the repository UI, then run make git_flow_seal."
-        printf '\n' >&2
         exit 1
     fi
 
@@ -66,14 +63,13 @@ flowHotfixFinish() {
     }
 
     cliSuccess "Pushed: $branch"
-    printf -- '- merge request: %s -> %s (bypasses the queue);\n' "$branch" "$FLOW_MAIN_BRANCH"
-    printf '\n'
+    cliItem "merge request: $branch -> $FLOW_MAIN_BRANCH (bypasses the queue)"
+    printf '\n' >&3
     if ! flowGitHubCreatePR "$branch" "$FLOW_MAIN_BRANCH"; then
         flowMergeRequestUrl "$branch" "$FLOW_MAIN_BRANCH"
     fi
     cliHint "Enable squash in the merge request (the title carries no version - the hotfix stamp follows)."
     cliHint "After the merge: make git_flow_seal (it switches to main and back-merges everywhere)."
-    printf '\n' >&2
 
 }
 
