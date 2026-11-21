@@ -81,7 +81,8 @@ Run every command from the project root through make: `make <target>`.
   branches (develop/staging/trains) that are fully promoted are reset to
   main automatically;
 - `make git_flow_status` — the declaration, branch topology, version truth,
-  fragments, per-variant command availability, findings;
+  fragments, findings and the key case sequences (delivery, review
+  iterations, hotfix) for the declared variant;
 - `make git_flow_help` — the step sequence for the current context,
   including the suggested next step.
 
@@ -106,6 +107,22 @@ Run every command from the project root through make: `make <target>`.
   Guards: refuses when the task is already delivered ("already in its
   merge-request target") or already pushed with an open MR ("already
   pushed - the merge request already exists").
+- `make git_flow_push` — merge-request iteration: pushes new commits of
+  the current task/hotfix branch into its open merge request. Guards:
+  only task/hotfix branches (main stamps via commit_push/seal), a clean
+  tree, the branch must already be published (finish/hotfix_finish owns
+  the initial publish), ff-only against origin (divergence refuses), and
+  the branch must not be delivered yet (patch-equivalence against main
+  and the gates).
+- `make git_flow_commit_push` — context differentiating:
+  - on a task/hotfix branch: merge-request iteration - validates the
+    "<Type>: <message>" format, commits and pushes into the open request
+    (without a message and a clean tree it degrades to a bare guarded
+    push); the seal owns the version, no stamp machinery runs;
+  - on a gate branch (develop/staging/release/*): refuses - gates receive
+    content through merge requests;
+  - on main: the variant #1 stamp (commit + tag + atomic push) or, in
+    variants 2-5 with the gate deferred, a plain commit and push.
 
 ### Promotion and the seal
 

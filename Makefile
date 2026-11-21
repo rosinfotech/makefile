@@ -4,8 +4,8 @@ define resolve_script
 $(if $(wildcard $(CURDIR)/.makefile/$(1)),$(CURDIR)/.makefile/$(1),$(if $(wildcard $(CURDIR)/.makefile/vendor/rosinfotech/$(1)),$(CURDIR)/.makefile/vendor/rosinfotech/$(1),$(GLOBAL_ROOT)/.makefile/$(1)))
 endef
 
-.PHONY: clear echo init kill_processes setup version_show version_update vendor git_flow_clear git_flow_commit git_flow_commit_push git_flow_help git_flow_init git_flow_promote git_flow_status git_flow_seal git_flow_hotfix_finish git_flow_hotfix_start git_flow_task_finish git_flow_task_fragment git_flow_task_merge_develop git_flow_task_start
-.SILENT: clear echo init kill_processes setup version_show version_update vendor git_flow_clear git_flow_commit git_flow_commit_push git_flow_help git_flow_init git_flow_promote git_flow_status git_flow_seal git_flow_hotfix_finish git_flow_hotfix_start git_flow_task_finish git_flow_task_fragment git_flow_task_merge_develop git_flow_task_start
+.PHONY: clear echo init kill_processes setup version_show version_update vendor git_flow_clear git_flow_commit git_flow_commit_push git_flow_help git_flow_init git_flow_promote git_flow_push git_flow_status git_flow_seal git_flow_hotfix_finish git_flow_hotfix_start git_flow_task_finish git_flow_task_fragment git_flow_task_merge_develop git_flow_task_start
+.SILENT: clear echo init kill_processes setup version_show version_update vendor git_flow_clear git_flow_commit git_flow_commit_push git_flow_help git_flow_init git_flow_promote git_flow_push git_flow_status git_flow_seal git_flow_hotfix_finish git_flow_hotfix_start git_flow_task_finish git_flow_task_fragment git_flow_task_merge_develop git_flow_task_start
 
 .DEFAULT_GOAL := echo
 
@@ -47,6 +47,9 @@ git_flow_init: init
 
 git_flow_promote: init
 	$(call resolve_script,git_flow_promote.sh) $(args)
+
+git_flow_push: init
+	$(call resolve_script,git_flow_push.sh) $(args)
 
 git_flow_status: init
 	$(call resolve_script,git_flow_status.sh)

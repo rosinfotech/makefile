@@ -1,7 +1,7 @@
 #!/bin/bash
 #
 # lib_git_flow.sh - the shared machinery of the Git Flow Standard commands
-# (github.com/rosinfotech/standards#the-git-flow-standard). A library, not a
+# (github.com/rosinfotech/standards/tree/master/standards/git-flow-standard). A library, not a
 # command: sourced by git_flow_*.sh, git_task_*.sh, git_flow_hotfix_start.sh.
 #
 # The variant matrix (the fork point equals the merge-request target,
@@ -649,6 +649,7 @@ flowUpdateBranchFromMainOnce() {
             return 0
         fi
         cliError "Conflict syncing $FLOW_MAIN_BRANCH into $branch - resolve in $tmp (worktree kept)"
+        cliHint "A gate whose content is fully promoted may be reset instead: git worktree remove --force $tmp; git branch -f $branch $FLOW_MAIN_BRANCH; git push --force-with-lease origin $branch."
         return 1
     fi
     rm -rf "$tmp"
@@ -783,6 +784,54 @@ flowCleanupMergedBranches() { # removes the merged branches after a report and a
         cliItem "removed: $branch"
     done
     printf '\n' >&3
+}
+
+
+flowTaskUpdatePush() { # pushes the current task/hotfix branch into its open merge request; 0 ok
+    local branch="$1" gate delivered=0
+    if ! git show-ref --verify --quiet "refs/remotes/origin/$branch" 2>/dev/null; then
+        cliError "$branch is not published yet - its merge request does not exist"
+        cliHint "Run make git_flow_task_finish (or git_flow_hotfix_finish) to publish it first."
+        return 1
+    fi
+    if flowHasRemote; then
+        git fetch origin >/dev/null 2>&1 || true
+    fi
+    if ! git merge --ff-only "origin/$branch" >/dev/null 2>&1; then
+        cliError "$branch diverged from origin/$branch - rebase manually before pushing"
+        return 1
+    fi
+    # delivered check runs against the PUBLISHED tip (origin/$branch):
+    # when the merge request was squash-merged, the published commits are
+    # patch-equivalent to the gate - later local commits must not resurrect
+    # a closed request but ride a new task instead
+    if flowBranchPatchesIn "origin/$branch" "$FLOW_MAIN_BRANCH" 2>/dev/null \
+        || flowBranchChangesIn "origin/$branch" "$FLOW_MAIN_BRANCH" 2>/dev/null; then
+        delivered=1
+    else
+        for gate in staging $(git for-each-ref --format='%(refname:short)' 'refs/heads/release/*'); do
+            if flowBranchPatchesIn "origin/$branch" "$gate" 2>/dev/null \
+                || flowBranchChangesIn "origin/$branch" "$gate" 2>/dev/null; then
+                delivered=1
+                break
+            fi
+        done
+    fi
+    if [ "$delivered" = "1" ]; then
+        cliError "$branch is already delivered - nothing to update"
+        cliHint "Start a new task when the change belongs to the next cycle."
+        return 1
+    fi
+    if [ "$(git rev-parse "$branch" 2>/dev/null)" = "$(git rev-parse "origin/$branch" 2>/dev/null)" ]; then
+        cliInfo "Nothing to push - $branch matches origin/$branch"
+        return 0
+    fi
+    git push origin "$branch" >/dev/null 2>&1 || {
+        cliError "Failed to push $branch"
+        return 1
+    }
+    cliSuccess "Pushed: $branch (the open merge request carries the update)"
+    return 0
 }
 
 

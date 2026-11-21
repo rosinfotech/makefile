@@ -34,12 +34,12 @@ flowStatus() {
     variant="${info%%|*}"
     name="${info#*|}"
 
-    cliHeader2 "Flow"
+    cliHeader1 "Flow"
     cliItem "Variant: #$variant - $name"
     cliItem "Flow file: $marker"
     printf '\n' >&3
 
-    cliHeader2 "Branches"
+    cliHeader1 "Branches"
     cliItem "$FLOW_MAIN_BRANCH: $(flowBranchState "$FLOW_MAIN_BRANCH")"
     [ "$variant" -ge 3 ] && cliItem "develop: $(flowBranchState develop)"
     [ "$variant" -eq 4 ] && cliItem "staging: $(flowBranchState staging)"
@@ -50,7 +50,7 @@ flowStatus() {
     fi
     printf '\n' >&3
 
-    cliHeader2 "Version"
+    cliHeader1 "Version"
     tag=$(flowLatestTag "$FLOW_MAIN_BRANCH" 2>/dev/null)
     [ -z "$tag" ] && flowHasRemote && tag=$(flowLatestTag "origin/$FLOW_MAIN_BRANCH" 2>/dev/null)
     cliItem "Tag (version truth): ${tag:-none}"
@@ -66,7 +66,7 @@ flowStatus() {
     printf '\n' >&3
 
     if [ -n "$(flowFragmentList)" ]; then
-        cliHeader2 "Fragments"
+        cliHeader1 "Fragments"
         for branch in $(flowFragmentList); do
             cliItem "$branch"
         done
@@ -92,53 +92,128 @@ flowStatus() {
     fi
     [ "$findings" -gt 0 ] && printf '\n' >&3
 
-    cliHeader2 "Commands"
-    case "$variant" in
-        1)
-            cliItem "git_flow_commit_push: enabled (the commit is the seal)"
-            cliItem "git_flow_task_*: blocked (variant #1 has no task branches)"
-            cliItem "git_flow_hotfix_start: blocked (a production fix is a regular commit)"
-            cliItem "git_flow_seal: redirects to git_flow_commit_push"
-            ;;
-        2)
-            cliItem "git_flow_task_start: enabled (fork: $FLOW_MAIN_BRANCH)"
-            cliItem "git_flow_task_fragment: enabled"
-            cliItem "git_flow_task_finish: enabled (free merge into $FLOW_MAIN_BRANCH)"
-            cliItem "git_flow_seal: enabled (after the merge)"
-            cliItem "git_flow_task_merge_develop: blocked (variant #2 has no develop line)"
-            cliItem "git_flow_hotfix_start: blocked (a hotfix is a regular task branch)"
-            ;;
-        3)
-            cliItem "git_flow_task_start: enabled (fork: $FLOW_MAIN_BRANCH)"
-            cliItem "git_flow_task_fragment: enabled"
-            cliItem "git_flow_task_merge_develop: enabled (free merge into develop)"
-            cliItem "git_flow_task_finish: enabled (MR into $FLOW_MAIN_BRANCH)"
-            cliItem "git_flow_seal: enabled (after the MR merge)"
-            cliItem "git_flow_hotfix_start: blocked (no queue - a fix is a regular task)"
-            ;;
-        4)
-            cliItem "git_flow_task_start: enabled (fork: staging)"
-            cliItem "git_flow_task_fragment: enabled"
-            cliItem "git_flow_task_merge_develop: enabled (free merge into develop)"
-            cliItem "git_flow_task_finish: enabled (MR into staging)"
-            cliItem "git_flow_hotfix_start: enabled (fork: main, bypasses the queue)"
-            cliItem "git_flow_seal: enabled (after the promotion / hotfix merge)"
-            ;;
-        5)
-            cliItem "git_flow_task_start: enabled (fork: release/x.y)"
-            cliItem "git_flow_task_fragment: enabled"
-            cliItem "git_flow_task_merge_develop: enabled (free merge into develop)"
-            cliItem "git_flow_task_finish: enabled (MR into release/x.y)"
-            cliItem "git_flow_hotfix_start: enabled (fork: main, bypasses the queue)"
-            cliItem "git_flow_seal: enabled (after the release / hotfix merge)"
-            ;;
-        *)
-            cliItem "commands: unknown variant #$variant - see the standard"
-            ;;
-    esac
+    cliHeader1 "Initialization case"
+    cliItemNum 1 "make git_flow_init <1..5> (declare the variant or migrate - the marker refreshes from the standard, the gate skeleton follows)"
     printf '\n' >&3
 
-    cliHeader2 "Rules"
+    case "$variant" in
+        1)
+            cliHeader1 "Delivery case"
+            cliItemNum 1 'make git_flow_commit_push "<Type>: <message>" (the commit is the seal)'
+            printf '\n' >&3
+            cliHeader1 "Review case"
+            cliItem "Not applicable: the fixes ride the next direct commit (variant #1 has no merge requests)"
+            printf '\n' >&3
+            ;;
+        2)
+            cliHeader1 "Delivery case"
+            cliItemNum 1 "make git_flow_task_start <label>"
+            cliItemNum 2 "cd ../<project>-task-<label>"
+            cliItemNum 3 'make git_flow_task_fragment "<Type>: <one English line>"'
+            cliItemNum 4 'make git_flow_commit "<Type>: <message>"'
+            cliItemNum 5 "make git_flow_task_finish"
+            cliItemNum 6 "Code review may request changes - see the Review case below"
+            cliItemNum 7 "cd <project directory>"
+            cliItemNum 8 "make git_flow_seal"
+            printf '\n' >&3
+            cliHeader1 "Review case"
+            cliItemNum 1 "cd ../<project>-task-<label>"
+            cliItemNum 2 'make git_flow_task_fragment "<Type>: <one English line>" (when the fix is user-visible)'
+            cliItemNum 3 'make git_flow_commit "<Type>: <message>"'
+            cliItemNum 4 "make git_flow_task_finish (re-run - the branch is not published, the squash carries the updates)"
+            cliItemNum 5 "cd <project directory>"
+            cliItemNum 6 "make git_flow_seal"
+            printf '\n' >&3
+            ;;
+        3)
+            cliHeader1 "Delivery case"
+            cliItemNum 1 "make git_flow_task_start <label>"
+            cliItemNum 2 "cd ../<project>-task-<label>"
+            cliItemNum 3 'make git_flow_task_fragment "<Type>: <one English line>"'
+            cliItemNum 4 'make git_flow_commit "<Type>: <message>"'
+            cliItemNum 5 "make git_flow_task_merge_develop"
+            cliItemNum 6 "make git_flow_task_finish"
+            cliItemNum 7 "Code review may request changes - see the Review case below"
+            cliItemNum 8 "Merge the request on the platform (squash)"
+            cliItemNum 9 "cd <project directory>"
+            cliItemNum 10 "make git_flow_seal"
+            printf '\n' >&3
+            cliHeader1 "Review case"
+            cliItemNum 1 "cd ../<project>-task-<label>"
+            cliItemNum 2 'make git_flow_commit_push "<Type>: <message>"'
+            cliItemNum 3 "make git_flow_task_merge_develop"
+            cliItemNum 4 "Merge the request on the platform (squash)"
+            printf '\n' >&3
+            ;;
+        4)
+            cliHeader1 "Delivery case"
+            cliItemNum 1 "make git_flow_task_start <label>"
+            cliItemNum 2 "cd ../<project>-task-<label>"
+            cliItemNum 3 'make git_flow_task_fragment "<Type>: <one English line>"'
+            cliItemNum 4 'make git_flow_commit "<Type>: <message>"'
+            cliItemNum 5 "make git_flow_task_merge_develop"
+            cliItemNum 6 "make git_flow_task_finish"
+            cliItemNum 7 "Code review may request changes - see the Review case below"
+            cliItemNum 8 "Merge the request into staging on the platform (squash)"
+            cliItemNum 9 "cd <project directory>"
+            cliItemNum 10 "make git_flow_promote"
+            cliItemNum 11 "Merge the promotion request on the platform (squash)"
+            cliItemNum 12 "make git_flow_seal"
+            printf '\n' >&3
+            cliHeader1 "Review case"
+            cliItemNum 1 "cd ../<project>-task-<label>"
+            cliItemNum 2 'make git_flow_commit_push "<Type>: <message>"'
+            cliItemNum 3 "make git_flow_task_merge_develop"
+            cliItemNum 4 "Merge the request into staging on the platform (squash) after the re-review"
+            printf '\n' >&3
+            cliHeader1 "Hotfix case"
+            cliItemNum 1 "make git_flow_hotfix_start <label>"
+            cliItemNum 2 "cd ../<project>-hotfix-<label>"
+            cliItemNum 3 'make git_flow_task_fragment "Fixed: <one English line>"'
+            cliItemNum 4 'make git_flow_commit "Fixed: <message>"'
+            cliItemNum 5 "make git_flow_hotfix_finish"
+            cliItemNum 6 "Code review may request changes - iterate in ../<project>-hotfix-<label> as the Review case describes"
+            cliItemNum 7 "Merge the request into main on the platform (squash)"
+            cliItemNum 8 "cd <project directory>"
+            cliItemNum 9 "make git_flow_seal"
+            printf '\n' >&3
+            ;;
+        5)
+            cliHeader1 "Delivery case"
+            cliItemNum 1 "make git_flow_task_start <label>"
+            cliItemNum 2 "cd ../<project>-task-<label>"
+            cliItemNum 3 'make git_flow_task_fragment "<Type>: <one English line>"'
+            cliItemNum 4 'make git_flow_commit "<Type>: <message>"'
+            cliItemNum 5 "make git_flow_task_merge_develop"
+            cliItemNum 6 "make git_flow_task_finish"
+            cliItemNum 7 "Code review may request changes - see the Review case below"
+            cliItemNum 8 "Merge the request into release/x.y on the platform (squash)"
+            cliItemNum 9 "cd <project directory>"
+            cliItemNum 10 "make git_flow_promote"
+            cliItemNum 11 "Merge the promotion request on the platform (squash)"
+            cliItemNum 12 "make git_flow_seal (stamps x.y.0)"
+            printf '\n' >&3
+            cliHeader1 "Review case"
+            cliItemNum 1 "cd ../<project>-task-<label>"
+            cliItemNum 2 'make git_flow_commit_push "<Type>: <message>"'
+            cliItemNum 3 "make git_flow_task_merge_develop"
+            cliItemNum 4 "Merge the request into release/x.y on the platform (squash) after the re-review"
+            printf '\n' >&3
+            cliHeader1 "Hotfix case"
+            cliItemNum 1 "make git_flow_hotfix_start <label>"
+            cliItemNum 2 "cd ../<project>-hotfix-<label>"
+            cliItemNum 3 'make git_flow_task_fragment "Fixed: <one English line>"'
+            cliItemNum 4 'make git_flow_commit "Fixed: <message>"'
+            cliItemNum 5 "make git_flow_hotfix_finish"
+            cliItemNum 6 "Code review may request changes - iterate in ../<project>-hotfix-<label> as the Review case describes"
+            cliItemNum 7 "Merge the request into main on the platform (squash)"
+            cliItemNum 8 "cd <project directory>"
+            cliItemNum 9 "make git_flow_seal (stamps the patch)"
+            printf '\n' >&3
+            ;;
+    esac
+
+    cliHeader1 "Rules"
     sed -n 's/^- //p' "$marker" 2>/dev/null | while read -r branch; do
         if [ "$CLI_COLOR_OUT" = "1" ]; then
             printf '%s- %s' "$CLI_TEXT" "$CLI_RESET" >&3

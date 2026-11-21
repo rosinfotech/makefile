@@ -100,6 +100,13 @@ Every task carries a changelog fragment
 (`make git_flow_task_fragment "<Type>: <one English line>"`) - the seal
 consumes the fragments and assembles the CHANGELOG section from them.
 
+A code review iterates the open merge request from the same task worktree:
+`make git_flow_commit_push "<Type>: <message>"` commits and pushes in one
+shot (or a series of `make git_flow_commit` + `make git_flow_push`); in
+variants #3-#5 follow with `make git_flow_task_merge_develop` so the gate
+sync stays conflict-free. Variant #2 re-runs `make git_flow_task_finish`
+instead - its task branch is never published as a request.
+
 ### Variant 1 - Direct to Main (Trunk-Based)
 
 The commit is the seal: work lands on main directly, the version stamp is

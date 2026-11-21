@@ -4,6 +4,25 @@
 
 # Changelog
 
+## [0.6.0] - 2026-11-21
+
+### Added
+
+- `git_flow_push` - the guarded push of task/hotfix branch updates into the open merge request (published-branch, ff-only and delivered-against-origin guards)
+- the key case sequences in git_flow_status (initialization, delivery with the review stage, review, hotfix) and the Code review iterations section in git_flow_help (variant-aware, including the hotfix requests)
+
+### Changed
+
+- `git_flow_commit_push` differentiates the context: on a task/hotfix branch it commits and updates the open merge request (the seal owns the version), on a gate branch it refuses, on main it stamps as before
+- git_flow_help leads with the current variant (the H1 title, its sequences first, the other variants after); Reference, GitHub integration and every git_flow_status section render as blue top-level headings - Heading 1 is always blue now (the owner's choice, mirroring infra; the light column is unchanged)
+- the GitHub integration section explains what each permission unlocks (What the integration provides)
+
+### Fixed
+
+- the gate sync conflict now hints the reset option (a fully promoted gate may be reset to main instead of resolving the tmp worktree)
+- the V2 review iteration re-runs `git_flow_task_finish` - the task branch is never published in variant #2, so a bare push has no open request to update
+- the Git Flow Standard link points to the standard directory instead of the dead `#the-git-flow-standard` anchor
+
 ## [0.5.0] - 2026-11-18
 
 ### Changed

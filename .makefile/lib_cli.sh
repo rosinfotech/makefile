@@ -55,7 +55,11 @@ cliColorApply() { # sets CLI_COLOR_OUT and the closed role palette
         CLI_TEXT=$'\033[38;5;239m'
         CLI_HINT=$'\033[38;5;246m'
     else
-        CLI_HEADING1=$'\033[96m'
+        # Marked deviation (owner's choice, mirroring infra): Heading 1 is
+        # always blue - bright blue on the dark theme instead of the
+        # standard's bright cyan; the page titles stand apart from the
+        # Information/Prompt cyan.
+        CLI_HEADING1=$'\033[38;5;39m'
         CLI_HEADING2=$'\033[97m'
         CLI_PROMPT=$'\033[96m'
         CLI_INFO=$'\033[96m'

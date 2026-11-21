@@ -30,6 +30,39 @@ gitCommitPush() {
         fi
     fi
 
+    # Context differentiation: a task/hotfix branch means merge-request
+    # iteration - commit and update the open request; the seal owns the
+    # version, no stamp machinery runs here.
+    case "$current_branch" in
+        task-[0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9]-*|\
+hotfix-[0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9]-*)
+            if [ -z "$message" ]; then
+                if [ -z "$(git status --porcelain)" ]; then
+                    flowTaskUpdatePush "$current_branch" || exit 1
+                    exit 0
+                fi
+                cliError "The commit message is required when the tree carries changes"
+                cliHint 'make git_flow_commit_push "<Type>: <message>" - or make git_flow_push for a bare push.'
+                exit 2
+            fi
+            flowRequireTaskCommitMessage "$message"
+            git add .
+            git commit -m "${message}" >/dev/null 2>&1 || {
+                cliError "Failed to create commit"
+                exit 1
+            }
+            cliSuccess "Committed with message: ${message}"
+            flowTaskUpdatePush "$current_branch" || exit 1
+            cliHint "Merge the open request (squash) after the review."
+            exit 0
+            ;;
+        develop|staging|release/*)
+            cliError "Gate branches receive content through merge requests - use a task branch"
+            cliHint "make git_flow_task_start forks from the gate you declared."
+            exit 1
+            ;;
+    esac
+
     old_version=$(git describe --tags --abbrev=0 2>/dev/null)
     if [ -z "$old_version" ] && [ -f .version ]; then
         old_version=$(sed -n '1p' .version | tr -d '\n\r')
